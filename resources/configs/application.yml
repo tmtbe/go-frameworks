@@ -1,0 +1,18 @@
+app:
+  name: details
+http:
+  mode: release
+  port: 8081
+db:
+  url: "postgres://root:root@localhost:5432/test?sslmode=disable"
+  migrations:
+    dir: "resources/db/migrations"
+  debug: false
+log:
+  filename: /tmp/details.log
+  maxSize: 500
+  maxBackups: 3
+  maxAge: 3
+  level: "debug"
+  stdout: true
+
