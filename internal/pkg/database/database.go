@@ -1,24 +1,18 @@
 package database
 
 import (
+	"database/sql"
 	"github.com/google/wire"
+	_ "github.com/lib/pq"
 	"github.com/pkg/errors"
-	migrate "github.com/rubenv/sql-migrate"
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
 )
-
-type migrationOptions struct {
-	Dir string
-}
 
 // Options is  configuration of database
 type Options struct {
-	URL        string
-	Migrations migrationOptions
-	Debug      bool
+	URL   string
+	Debug bool
 }
 
 func NewOptions(v *viper.Viper, logger *zap.Logger) (*Options, error) {
@@ -34,27 +28,12 @@ func NewOptions(v *viper.Viper, logger *zap.Logger) (*Options, error) {
 }
 
 // New Init 初始化数据库
-func New(o *Options, logger *zap.Logger) (*gorm.DB, error) {
-	db, err := gorm.Open(postgres.New(postgres.Config{
-		DSN:                  o.URL,
-		PreferSimpleProtocol: true, // disables implicit prepared statement usage
-	}), &gorm.Config{})
+func New(o *Options) (*sql.DB, error) {
+	sqlDB, err := sql.Open("postgres", o.URL)
 	if err != nil {
 		return nil, errors.Wrap(err, "database open error")
 	}
-	sqlDb, err := db.DB()
-	if err != nil {
-		return nil, errors.Wrap(err, "database open error")
-	}
-	m := &migrate.FileMigrationSource{
-		Dir: o.Migrations.Dir,
-	}
-	n, err := migrate.Exec(sqlDb, "postgres", m, migrate.Up)
-	if err != nil {
-		return nil, errors.Wrap(err, "applying migrations failed")
-	}
-	logger.Info("migrations applied", zap.Int("count", n))
-	return db, nil
+	return sqlDB, nil
 }
 
 var ProviderSet = wire.NewSet(New, NewOptions)

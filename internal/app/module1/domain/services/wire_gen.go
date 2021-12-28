@@ -6,18 +6,21 @@
 package services
 
 import (
+	"context"
 	"github.com/google/wire"
+	"gorm.io/gorm"
 	"test/internal/app/module1/infrastructure"
 	"test/internal/app/module1/infrastructure/repos"
 	"test/internal/pkg"
 	"test/internal/pkg/config"
-	"test/internal/pkg/database"
 	"test/internal/pkg/log"
+	"test/internal/pkg/migrate"
+	"test/internal/pkg/tests"
 )
 
 // Injectors from wire.go:
 
-func CreateUserDetailService(cf string) (UserDetailService, error) {
+func CreateTestContext(cf string) (*TestContext, error) {
 	viper, err := config.New(cf)
 	if err != nil {
 		return nil, err
@@ -30,22 +33,42 @@ func CreateUserDetailService(cf string) (UserDetailService, error) {
 	if err != nil {
 		return nil, err
 	}
-	databaseOptions, err := database.NewOptions(viper, logger)
+	migrationOptions, err := migrate.NewOptions(viper)
 	if err != nil {
 		return nil, err
 	}
-	db, err := database.New(databaseOptions, logger)
+	context := tests.NewTSContext()
+	db, err := tests.NewDb(context, logger)
 	if err != nil {
 		return nil, err
 	}
-	detailRepository := repos.NewPostgresDetailsRepository(logger, db)
-	userRepository := repos.NewPostgresUserRepository(logger, db)
+	gormDB, err := migrate.Migrate(viper, migrationOptions, db, logger)
+	if err != nil {
+		return nil, err
+	}
+	detailRepository := repos.NewPostgresDetailsRepository(logger, gormDB)
+	userRepository := repos.NewPostgresUserRepository(logger, gormDB)
 	userDetailService := NewUserDetailServiceImpl(logger, detailRepository, userRepository)
-	return userDetailService, nil
+	testContext := NewTestContext(userDetailService, gormDB)
+	return testContext, nil
 }
 
 // wire.go:
 
 var testProviderSet = wire.NewSet(
-	ProviderSet, infrastructure.ProviderSet, pkg.ProviderSet,
+	ProviderSet, infrastructure.ProviderSet, pkg.TestProviderSet, NewTestContext,
 )
+
+type TestContext struct {
+	userDetailService     UserDetailService
+	db                    *gorm.DB
+	testContainersContext context.Context
+}
+
+func NewTestContext(userDetailService UserDetailService, db *gorm.DB) *TestContext {
+	return &TestContext{
+		userDetailService:     userDetailService,
+		db:                    db,
+		testContainersContext: context.Background(),
+	}
+}

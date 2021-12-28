@@ -5,13 +5,18 @@ import (
 	"testing"
 )
 
-var configFile = flag.String("f", "resources/configs/application.yml", "set config file which viper will loading.")
+var resourcesPath = flag.String("f", ".", "set resources file which viper will loading.")
 
-func TestDetailsRepository_Get(t *testing.T) {
+func setUp() *TestContext {
 	flag.Parse()
-	service, err := CreateUserDetailService(*configFile)
+	testContext, err := CreateTestContext(*resourcesPath)
 	if err != nil {
-		return
+		panic(err)
 	}
-	service.GetUserDetail(1)
+	return testContext
+}
+
+func TestDetailsRepository_GetUserDetail(t *testing.T) {
+	testContext := setUp()
+	testContext.userDetailService.GetUserDetail(1)
 }

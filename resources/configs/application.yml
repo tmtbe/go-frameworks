@@ -6,7 +6,7 @@ http:
 db:
   url: "postgres://root:root@localhost:5432/test?sslmode=disable"
   migrations:
-    dir: "resources/db/migrations"
+    dir: "/resources/db/migrations"
   debug: false
 log:
   filename: /tmp/details.log

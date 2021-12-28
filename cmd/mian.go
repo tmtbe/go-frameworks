@@ -2,11 +2,11 @@ package main
 
 import "flag"
 
-var configFile = flag.String("f", "resources/configs/application.yml", "set config file which viper will loading.")
+var resourcesPath = flag.String("f", ".", "set resources path viper will loading.")
 
 func main() {
 	flag.Parse()
-	application, err := CreateApp(*configFile)
+	application, err := CreateApp(*resourcesPath)
 	if err != nil {
 		panic(err)
 	}

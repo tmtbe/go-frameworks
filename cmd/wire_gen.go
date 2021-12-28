@@ -48,12 +48,16 @@ func CreateApp(cf string) (*app.Application, error) {
 	if err != nil {
 		return nil, err
 	}
-	db, err := database.New(databaseOptions, logger)
+	db, err := database.New(databaseOptions)
 	if err != nil {
 		return nil, err
 	}
-	detailRepository := repos.NewPostgresDetailsRepository(logger, db)
-	userRepository := repos.NewPostgresUserRepository(logger, db)
+	gormDB, err := database.Migrate(viper, databaseOptions, db, logger)
+	if err != nil {
+		return nil, err
+	}
+	detailRepository := repos.NewPostgresDetailsRepository(logger, gormDB)
+	userRepository := repos.NewPostgresUserRepository(logger, gormDB)
 	userDetailService := services.NewUserDetailServiceImpl(logger, detailRepository, userRepository)
 	userDetailApplication := application.NewDetailsApplication(logger, userDetailService)
 	v := interfaces.NewAPIS(logger, userDetailApplication)
