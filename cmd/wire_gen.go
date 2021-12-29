@@ -15,10 +15,13 @@ import (
 	"test/internal/app/module1/interfaces/apis"
 	"test/internal/pkg"
 	"test/internal/pkg/app"
+	"test/internal/pkg/cachestore"
 	"test/internal/pkg/config"
+	"test/internal/pkg/context"
 	"test/internal/pkg/database"
 	"test/internal/pkg/log"
 	"test/internal/pkg/migrate"
+	"test/internal/pkg/redis"
 	"test/internal/pkg/transports/http"
 )
 
@@ -49,6 +52,7 @@ func CreateApp(cf string) (*app.Application, error) {
 	if err != nil {
 		return nil, err
 	}
+	engine := http.NewGin(httpOptions, logger)
 	databaseOptions, err := database.NewOptions(viper, logger)
 	if err != nil {
 		return nil, err
@@ -65,26 +69,36 @@ func CreateApp(cf string) (*app.Application, error) {
 	if err != nil {
 		return nil, err
 	}
+	contextContext := context.NewContext()
+	redisOptions, err := redis.NewOptions(viper, logger)
+	if err != nil {
+		return nil, err
+	}
+	client, err := redis.New(contextContext, redisOptions)
+	if err != nil {
+		return nil, err
+	}
+	redisStore := cachestore.NewRedisCache(client)
+	appContext := &context.AppContext{
+		Config:     viper,
+		Log:        logger,
+		Route:      engine,
+		GormDB:     gormDB,
+		DB:         db,
+		CacheStore: redisStore,
+		Context:    contextContext,
+	}
 	postgresDetailRepository := repos.NewPostgresDetailsRepository(logger, gormDB)
 	postgresUserRepository := repos.NewPostgresUserRepository(logger, gormDB)
 	userDetailServiceImpl := services.NewUserDetailServiceImpl(logger, postgresDetailRepository, postgresUserRepository)
 	userDetailApplication := application.NewDetailsApplication(logger, userDetailServiceImpl)
 	v := interfaces.NewAPIS(logger, userDetailApplication)
 	initControllers := apis.CreateInitControllersFn(v...)
-	engine := http.NewRouter(httpOptions, logger, initControllers)
-	server, err := http.New(httpOptions, logger, engine)
+	server, err := http.NewServer(httpOptions, logger, appContext, initControllers)
 	if err != nil {
 		return nil, err
 	}
-	context := &app.Context{
-		Config: viper,
-		Log:    logger,
-		Engine: engine,
-		Server: server,
-		GormDB: gormDB,
-		DB:     db,
-	}
-	appApplication, err := app2.NewApp(appOptions, context, logger, server)
+	appApplication, err := app2.NewApp(appOptions, appContext, logger, server)
 	if err != nil {
 		return nil, err
 	}

@@ -7,18 +7,17 @@ package tests
 
 import (
 	"github.com/google/wire"
-	app2 "test/internal/app"
-	"test/internal/app/context"
-	"test/internal/app/module1/application"
+	"test/internal/app"
+	context2 "test/internal/app/context"
 	"test/internal/app/module1/domain/services"
 	"test/internal/app/module1/infrastructure/repos"
-	"test/internal/app/module1/interfaces"
-	"test/internal/app/module1/interfaces/apis"
-	"test/internal/pkg/app"
+	"test/internal/pkg/cachestore"
 	"test/internal/pkg/config"
+	"test/internal/pkg/context"
 	"test/internal/pkg/database"
 	"test/internal/pkg/log"
 	"test/internal/pkg/migrate"
+	"test/internal/pkg/redis"
 	"test/internal/pkg/transports/http"
 	"test/tests/pkg"
 	database2 "test/tests/pkg/database"
@@ -48,6 +47,7 @@ func CreateBackground(cf string) (*testcontainer.Background, error) {
 	if err != nil {
 		return nil, err
 	}
+	engine := http.NewGin(httpOptions, logger)
 	databaseOptions, err := database.NewOptions(viper, logger)
 	if err != nil {
 		return nil, err
@@ -56,7 +56,7 @@ func CreateBackground(cf string) (*testcontainer.Background, error) {
 	if err != nil {
 		return nil, err
 	}
-	contextContext := testcontainer.NewTSContext()
+	contextContext := context.NewContext()
 	db, err := database2.NewDb(contextContext, databaseOptions, logger)
 	if err != nil {
 		return nil, err
@@ -65,33 +65,35 @@ func CreateBackground(cf string) (*testcontainer.Background, error) {
 	if err != nil {
 		return nil, err
 	}
-	postgresDetailRepository := repos.NewPostgresDetailsRepository(logger, gormDB)
-	postgresUserRepository := repos.NewPostgresUserRepository(logger, gormDB)
-	userDetailServiceImpl := services.NewUserDetailServiceImpl(logger, postgresDetailRepository, postgresUserRepository)
-	userDetailApplication := application.NewDetailsApplication(logger, userDetailServiceImpl)
-	v := interfaces.NewAPIS(logger, userDetailApplication)
-	initControllers := apis.CreateInitControllersFn(v...)
-	engine := http.NewRouter(httpOptions, logger, initControllers)
-	server, err := http.New(httpOptions, logger, engine)
+	redisOptions, err := redis.NewOptions(viper, logger)
 	if err != nil {
 		return nil, err
 	}
-	appContext := &app.Context{
-		Config: viper,
-		Log:    logger,
-		Engine: engine,
-		Server: server,
-		GormDB: gormDB,
-		DB:     db,
+	client, err := redis.New(contextContext, redisOptions)
+	if err != nil {
+		return nil, err
 	}
-	context2 := context.Context{
-		Context:           appContext,
+	redisStore := cachestore.NewRedisCache(client)
+	appContext := &context.AppContext{
+		Config:     viper,
+		Log:        logger,
+		Route:      engine,
+		GormDB:     gormDB,
+		DB:         db,
+		CacheStore: redisStore,
+		Context:    contextContext,
+	}
+	postgresUserRepository := repos.NewPostgresUserRepository(logger, gormDB)
+	postgresDetailRepository := repos.NewPostgresDetailsRepository(logger, gormDB)
+	userDetailServiceImpl := services.NewUserDetailServiceImpl(logger, postgresDetailRepository, postgresUserRepository)
+	context3 := &context2.Context{
+		AppContext:        appContext,
 		UserRepository:    postgresUserRepository,
 		DetailRepository:  postgresDetailRepository,
 		UserDetailService: userDetailServiceImpl,
 	}
 	background := &testcontainer.Background{
-		Context:               context2,
+		Context:               context3,
 		TestContainersContext: contextContext,
 	}
 	return background, nil
@@ -99,4 +101,4 @@ func CreateBackground(cf string) (*testcontainer.Background, error) {
 
 // wire.go:
 
-var ProviderSet = wire.NewSet(app2.ProviderSet, pkg.ProviderSet)
+var ProviderSet = wire.NewSet(app.ProviderSet, pkg.ProviderSet)

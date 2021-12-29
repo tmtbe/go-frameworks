@@ -1,16 +1,12 @@
 package app
 
 import (
-	"database/sql"
-	"github.com/gin-gonic/gin"
-	"github.com/google/wire"
 	"github.com/pkg/errors"
-	"github.com/spf13/viper"
 	"go.uber.org/zap"
-	"gorm.io/gorm"
 	"os"
 	"os/signal"
 	"syscall"
+	context2 "test/internal/pkg/context"
 	"test/internal/pkg/transports/http"
 )
 
@@ -18,16 +14,7 @@ type Application struct {
 	name       string
 	logger     *zap.Logger
 	httpServer *http.Server
-	context    *Context
-}
-
-type Context struct {
-	Config *viper.Viper
-	Log    *zap.Logger
-	Engine *gin.Engine
-	Server *http.Server
-	GormDB *gorm.DB
-	DB     *sql.DB
+	context    *context2.AppContext
 }
 
 type Option func(app *Application) error
@@ -41,7 +28,7 @@ func HttpServerOption(svr *http.Server) Option {
 	}
 }
 
-func New(name string, context *Context, logger *zap.Logger, options ...Option) (*Application, error) {
+func New(name string, context *context2.AppContext, logger *zap.Logger, options ...Option) (*Application, error) {
 	app := &Application{
 		name:    name,
 		logger:  logger.With(zap.String("type", "Application")),
@@ -81,7 +68,3 @@ func (a *Application) AwaitSignal() {
 		os.Exit(0)
 	}
 }
-
-var ProviderSet = wire.NewSet(
-	wire.Struct(new(Context), "*"),
-)

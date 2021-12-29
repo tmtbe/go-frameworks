@@ -8,6 +8,7 @@ import (
 	"test/internal/app/context"
 	"test/internal/app/module1"
 	"test/internal/pkg/app"
+	context2 "test/internal/pkg/context"
 	"test/internal/pkg/transports/http"
 )
 
@@ -25,7 +26,7 @@ func NewOptions(v *viper.Viper, logger *zap.Logger) (*Options, error) {
 	return o, err
 }
 
-func NewApp(o *Options, context *app.Context, logger *zap.Logger, hs *http.Server) (*app.Application, error) {
+func NewApp(o *Options, context *context2.AppContext, logger *zap.Logger, hs *http.Server) (*app.Application, error) {
 	a, err := app.New(o.Name, context, logger, app.HttpServerOption(hs))
 	if err != nil {
 		return nil, errors.Wrap(err, "new app error")

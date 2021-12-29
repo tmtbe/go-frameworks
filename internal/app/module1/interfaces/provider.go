@@ -5,12 +5,12 @@ import (
 	"go.uber.org/zap"
 	"test/internal/app/module1/application"
 	"test/internal/app/module1/interfaces/apis"
-	"test/internal/pkg/route"
+	"test/internal/pkg/transports/http"
 )
 
 // NewAPIS 这里注册API
-func NewAPIS(logger *zap.Logger, a *application.UserDetailApplication) []route.Controller {
-	var controllers []route.Controller
+func NewAPIS(logger *zap.Logger, a *application.UserDetailApplication) []http.Controller {
+	var controllers []http.Controller
 	controllers = append(controllers, apis.NewUserDetailAPI(logger, a))
 	return controllers
 }

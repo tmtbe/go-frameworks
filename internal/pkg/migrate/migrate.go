@@ -26,6 +26,9 @@ func NewOptions(v *viper.Viper) (*MigrationOptions, error) {
 }
 
 func Migrate(v *viper.Viper, o *database.Options, mo *MigrationOptions, sqlDb *sql.DB, logger *zap.Logger) (*gorm.DB, error) {
+	if !o.Enable {
+		return nil, nil
+	}
 	m := &migrate.FileMigrationSource{
 		Dir: v.GetString("resources_path") + mo.Dir,
 	}

@@ -8,13 +8,8 @@ import (
 	app_context "test/internal/app/context"
 )
 
-func NewTSContext() context.Context {
-	background := context.Background()
-	return background
-}
-
 type Background struct {
-	app_context.Context
+	*app_context.Context
 	TestContainersContext context.Context
 }
 
@@ -35,4 +30,4 @@ func (bg *Background) MustSetUpDbWithSql(stmt string) {
 	}
 }
 
-var ProviderSet = wire.NewSet(NewTSContext, wire.Struct(new(Background), "*"))
+var ProviderSet = wire.NewSet(wire.Struct(new(Background), "*"))

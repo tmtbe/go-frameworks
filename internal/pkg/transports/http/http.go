@@ -10,6 +10,7 @@ import (
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
 	"net/http"
+	context2 "test/internal/pkg/context"
 	"test/internal/pkg/utils/netutil"
 	"time"
 )
@@ -42,23 +43,27 @@ func NewOptions(v *viper.Viper) (*Options, error) {
 	return o, err
 }
 
-type InitControllers func(r *gin.Engine)
+type InitControllers func(ctx *context2.AppContext)
 
-func NewRouter(o *Options, logger *zap.Logger, init InitControllers) *gin.Engine {
+type Controller interface {
+	GetRoute(ctx *context2.AppContext)
+}
+
+func NewGin(o *Options, logger *zap.Logger) *gin.Engine {
 	// 配置gin
 	gin.SetMode(o.Mode)
 	r := gin.New()
 	r.Use(gin.Recovery()) // panic之后自动恢复
 	r.Use(ginzap.Ginzap(logger, time.RFC3339, true))
 	r.Use(ginzap.RecoveryWithZap(logger, true))
-	init(r)
 	return r
 }
 
-func New(o *Options, logger *zap.Logger, router *gin.Engine) (*Server, error) {
+func NewServer(o *Options, logger *zap.Logger, ctx *context2.AppContext, init InitControllers) (*Server, error) {
+	init(ctx)
 	var s = &Server{
 		logger: logger.With(zap.String("type", "http.Server")),
-		router: router,
+		router: ctx.Route,
 		o:      o,
 	}
 	return s, nil
@@ -104,4 +109,4 @@ func (s *Server) Stop() error {
 	return nil
 }
 
-var ProviderSet = wire.NewSet(New, NewRouter, NewOptions)
+var ProviderSet = wire.NewSet(NewServer, NewGin, NewOptions)

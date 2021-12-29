@@ -11,8 +11,8 @@ import (
 
 // Options is  configuration of database
 type Options struct {
-	URL   string
-	Debug bool
+	URL    string
+	Enable bool
 }
 
 func (o *Options) GetDialect() string {
@@ -31,6 +31,9 @@ func NewOptions(v *viper.Viper, logger *zap.Logger) (*Options, error) {
 
 // New Init 初始化数据库
 func New(o *Options) (*sql.DB, error) {
+	if !o.Enable {
+		return nil, nil
+	}
 	sqlDB, err := sql.Open(o.GetDialect(), o.URL)
 	if err != nil {
 		return nil, errors.Wrap(err, "database open error")

@@ -4,11 +4,11 @@ import (
 	"github.com/google/wire"
 	"test/internal/app/module1/domain/services"
 	"test/internal/app/module1/infrastructure/repos"
-	"test/internal/pkg/app"
+	"test/internal/pkg/context"
 )
 
 type Context struct {
-	*app.Context
+	*context.AppContext
 	repos.UserRepository
 	repos.DetailRepository
 	services.UserDetailService

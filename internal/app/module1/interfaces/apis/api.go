@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"test/internal/app/module1/infrastructure/exceptions"
 	exception2 "test/internal/app/module1/interfaces/exceptions"
-	"test/internal/pkg/route"
+	"test/internal/pkg/context"
 	th "test/internal/pkg/transports/http"
 )
 
@@ -43,11 +43,11 @@ func wrapper(handler HandlerFunc) func(c *gin.Context) {
 }
 
 func CreateInitControllersFn(
-	pc ...route.Controller,
+	pc ...th.Controller,
 ) th.InitControllers {
-	return func(r *gin.Engine) {
+	return func(ctx *context.AppContext) {
 		for _, c := range pc {
-			c.GetRoute(r)
+			c.GetRoute(ctx)
 		}
 	}
 }
