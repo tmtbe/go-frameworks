@@ -3,7 +3,6 @@ package database
 import (
 	"database/sql"
 	"github.com/google/wire"
-	_ "github.com/lib/pq"
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 	"go.uber.org/zap"

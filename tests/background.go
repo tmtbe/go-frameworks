@@ -2,6 +2,7 @@ package tests
 
 import (
 	"flag"
+	_ "github.com/lib/pq"
 	"test/tests/pkg/testcontainer"
 )
 

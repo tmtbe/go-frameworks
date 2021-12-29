@@ -25,6 +25,10 @@ import (
 	"test/tests/pkg/testcontainer"
 )
 
+import (
+	_ "github.com/lib/pq"
+)
+
 // Injectors from wire.go:
 
 func CreateBackground(cf string) (*testcontainer.Background, error) {
@@ -53,7 +57,7 @@ func CreateBackground(cf string) (*testcontainer.Background, error) {
 		return nil, err
 	}
 	contextContext := testcontainer.NewTSContext()
-	db, err := database2.NewDb(contextContext, logger)
+	db, err := database2.NewDb(contextContext, databaseOptions, logger)
 	if err != nil {
 		return nil, err
 	}

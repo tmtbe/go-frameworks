@@ -22,6 +22,10 @@ import (
 	"test/internal/pkg/transports/http"
 )
 
+import (
+	_ "github.com/lib/pq"
+)
+
 // Injectors from wire.go:
 
 func CreateApp(cf string) (*app.Application, error) {

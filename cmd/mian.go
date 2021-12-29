@@ -1,6 +1,9 @@
 package main
 
-import "flag"
+import (
+	"flag"
+	_ "github.com/lib/pq"
+)
 
 var resourcesPath = flag.String("f", ".", "set resources path viper will loading.")
 

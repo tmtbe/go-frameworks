@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"github.com/docker/go-connections/nat"
 	"github.com/google/wire"
-	_ "github.com/lib/pq"
-	"github.com/pkg/errors"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
 	"go.uber.org/zap"
@@ -15,7 +13,7 @@ import (
 	"time"
 )
 
-func NewDb(context context.Context, logger *zap.Logger) (*sql.DB, error) {
+func createPostgres() (testcontainers.GenericContainerRequest, string, func(port nat.Port) string) {
 	dbname := "test"
 	var env = map[string]string{
 		"POSTGRES_PASSWORD": "root",
@@ -37,21 +35,29 @@ func NewDb(context context.Context, logger *zap.Logger) (*sql.DB, error) {
 		},
 		Started: true,
 	}
+	return req, port, dbURL
+}
+
+func NewDb(context context.Context, o *database.Options, logger *zap.Logger) (*sql.DB, error) {
+	var (
+		req   testcontainers.GenericContainerRequest
+		port  string
+		dbURL func(port nat.Port) string
+	)
+	switch o.GetDialect() {
+	case "postgres":
+		req, port, dbURL = createPostgres()
+	}
 	container, err := testcontainers.GenericContainer(context, req)
 	if err != nil {
 		return nil, fmt.Errorf("failed to start container: %s", err)
 	}
-
 	mappedPort, err := container.MappedPort(context, nat.Port(port))
 	if err != nil {
 		return nil, fmt.Errorf("failed to get container external port: %s", err)
 	}
-	logger.Info("postgres container ready and running at port: ", zap.Any("mappedPort", mappedPort))
-	sqlDB, err := sql.Open("postgres", dbURL(mappedPort))
-	if err != nil {
-		return nil, errors.Wrap(err, "database open error")
-	}
-	return sqlDB, nil
+	logger.Info(o.GetDialect()+" container ready and running at port: ", zap.Any("mappedPort", mappedPort))
+	return sql.Open(o.GetDialect(), dbURL(mappedPort))
 }
 
 var ProviderSet = wire.NewSet(NewDb, database.NewOptions)
