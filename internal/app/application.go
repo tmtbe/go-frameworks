@@ -5,6 +5,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
+	"test/internal/app/context"
 	"test/internal/app/module1"
 	"test/internal/pkg/app"
 	"test/internal/pkg/transports/http"
@@ -36,4 +37,5 @@ var ProviderSet = wire.NewSet(
 	NewApp,
 	NewOptions,
 	module1.ProviderSet,
+	context.ProviderSet,
 )

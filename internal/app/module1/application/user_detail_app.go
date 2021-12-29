@@ -3,7 +3,6 @@ package application
 import (
 	"go.uber.org/zap"
 	"test/internal/app/module1/domain/services"
-	"test/internal/pkg/app"
 )
 
 type UserDetailApplication struct {
@@ -11,12 +10,11 @@ type UserDetailApplication struct {
 	service services.UserDetailService
 }
 
-func NewDetailsApplication(c *app.Context, logger *zap.Logger, s services.UserDetailService) *UserDetailApplication {
+func NewDetailsApplication(logger *zap.Logger, s services.UserDetailService) *UserDetailApplication {
 	u := &UserDetailApplication{
 		logger:  logger,
 		service: s,
 	}
-	c.Add("user_detail_application", u)
 	return u
 }
 

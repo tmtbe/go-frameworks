@@ -3,28 +3,30 @@
 //go:generate go run github.com/google/wire/cmd/wire
 //+build !wireinject
 
-package main
+package tests
 
 import (
 	"github.com/google/wire"
 	app2 "test/internal/app"
+	"test/internal/app/context"
 	"test/internal/app/module1/application"
 	"test/internal/app/module1/domain/services"
 	"test/internal/app/module1/infrastructure/repos"
 	"test/internal/app/module1/interfaces"
 	"test/internal/app/module1/interfaces/apis"
-	"test/internal/pkg"
 	"test/internal/pkg/app"
 	"test/internal/pkg/config"
-	"test/internal/pkg/database"
 	"test/internal/pkg/log"
 	"test/internal/pkg/migrate"
 	"test/internal/pkg/transports/http"
+	"test/tests/pkg"
+	"test/tests/pkg/database"
+	"test/tests/pkg/testcontainer"
 )
 
 // Injectors from wire.go:
 
-func CreateApp(cf string) (*app.Application, error) {
+func CreateBackground(cf string) (*testcontainer.Background, error) {
 	viper, err := config.New(cf)
 	if err != nil {
 		return nil, err
@@ -37,10 +39,6 @@ func CreateApp(cf string) (*app.Application, error) {
 	if err != nil {
 		return nil, err
 	}
-	appOptions, err := app2.NewOptions(viper, logger)
-	if err != nil {
-		return nil, err
-	}
 	httpOptions, err := http.NewOptions(viper)
 	if err != nil {
 		return nil, err
@@ -49,11 +47,8 @@ func CreateApp(cf string) (*app.Application, error) {
 	if err != nil {
 		return nil, err
 	}
-	databaseOptions, err := database.NewOptions(viper, logger)
-	if err != nil {
-		return nil, err
-	}
-	db, err := database.New(databaseOptions)
+	contextContext := testcontainer.NewTSContext()
+	db, err := database.NewDb(contextContext, logger)
 	if err != nil {
 		return nil, err
 	}
@@ -72,19 +67,27 @@ func CreateApp(cf string) (*app.Application, error) {
 	if err != nil {
 		return nil, err
 	}
-	context := &app.Context{
+	appContext := &app.Context{
 		Config: viper,
 		Log:    logger,
 		Engine: engine,
 		Server: server,
+		GormDB: gormDB,
+		DB:     db,
 	}
-	appApplication, err := app2.NewApp(appOptions, context, logger, server)
-	if err != nil {
-		return nil, err
+	context2 := context.Context{
+		Context:           appContext,
+		UserRepository:    postgresUserRepository,
+		DetailRepository:  postgresDetailRepository,
+		UserDetailService: userDetailServiceImpl,
 	}
-	return appApplication, nil
+	background := &testcontainer.Background{
+		Context:               context2,
+		TestContainersContext: contextContext,
+	}
+	return background, nil
 }
 
 // wire.go:
 
-var providerSet = wire.NewSet(pkg.ProviderSet, app2.ProviderSet)
+var ProviderSet = wire.NewSet(app2.ProviderSet, pkg.ProviderSet)

@@ -1,4 +1,4 @@
-package tests
+package database
 
 import (
 	"context"
@@ -11,17 +11,10 @@ import (
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
 	"go.uber.org/zap"
-	"test/internal/pkg/app"
 	"time"
 )
 
-func NewTSContext(c *app.Context) context.Context {
-	background := context.Background()
-	c.Add("ts_context", background)
-	return background
-}
-
-func NewDb(c *app.Context, context context.Context, logger *zap.Logger) (*sql.DB, error) {
+func NewDb(context context.Context, logger *zap.Logger) (*sql.DB, error) {
 	dbname := "test"
 	var env = map[string]string{
 		"POSTGRES_PASSWORD": "root",
@@ -57,8 +50,7 @@ func NewDb(c *app.Context, context context.Context, logger *zap.Logger) (*sql.DB
 	if err != nil {
 		return nil, errors.Wrap(err, "database open error")
 	}
-	c.Add("sql_db", sqlDB)
 	return sqlDB, nil
 }
 
-var ProviderSet = wire.NewSet(NewTSContext, NewDb)
+var ProviderSet = wire.NewSet(NewDb)

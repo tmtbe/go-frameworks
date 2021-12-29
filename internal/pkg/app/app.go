@@ -1,15 +1,17 @@
 package app
 
 import (
+	"database/sql"
+	"github.com/gin-gonic/gin"
 	"github.com/google/wire"
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
+	"gorm.io/gorm"
 	"os"
 	"os/signal"
 	"syscall"
 	"test/internal/pkg/transports/http"
-	"test/internal/pkg/utils"
 )
 
 type Application struct {
@@ -20,44 +22,12 @@ type Application struct {
 }
 
 type Context struct {
-	config  *viper.Viper
-	log     *zap.Logger
-	content map[string]interface{}
-}
-
-func (c *Context) Add(name string, component interface{}) {
-	if _, ok := c.content[name]; ok {
-		panic("has same key component")
-	}
-	c.content[name] = component
-	c.log.Debug("context add component:", zap.Any(name, utils.Typeof(component)))
-}
-
-func (c *Context) Has(name string) (ok bool) {
-	_, ok = c.content[name]
-	return
-}
-
-func (c *Context) Get(name string) (interface{}, error) {
-	if i, ok := c.content[name]; ok {
-		return i, nil
-	}
-	return nil, errors.New("no component:" + name)
-}
-
-func (c *Context) MustGet(name string) interface{} {
-	if i, ok := c.content[name]; ok {
-		return i
-	}
-	panic("no component:" + name)
-}
-
-func NewAppContext(config *viper.Viper, log *zap.Logger) *Context {
-	return &Context{
-		config:  config,
-		log:     log,
-		content: map[string]interface{}{},
-	}
+	Config *viper.Viper
+	Log    *zap.Logger
+	Engine *gin.Engine
+	Server *http.Server
+	GormDB *gorm.DB
+	DB     *sql.DB
 }
 
 type Option func(app *Application) error
@@ -112,4 +82,6 @@ func (a *Application) AwaitSignal() {
 	}
 }
 
-var ProviderSet = wire.NewSet(NewAppContext)
+var ProviderSet = wire.NewSet(
+	wire.Struct(new(Context), "*"),
+)

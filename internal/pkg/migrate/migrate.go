@@ -9,7 +9,6 @@ import (
 	"go.uber.org/zap"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"test/internal/pkg/app"
 )
 
 type MigrationOptions struct {
@@ -25,7 +24,7 @@ func NewOptions(v *viper.Viper) (*MigrationOptions, error) {
 	return o, err
 }
 
-func Migrate(c *app.Context, v *viper.Viper, o *MigrationOptions, sqlDb *sql.DB, logger *zap.Logger) (*gorm.DB, error) {
+func Migrate(v *viper.Viper, o *MigrationOptions, sqlDb *sql.DB, logger *zap.Logger) (*gorm.DB, error) {
 	m := &migrate.FileMigrationSource{
 		Dir: v.GetString("resources_path") + o.Dir,
 	}
@@ -40,7 +39,6 @@ func Migrate(c *app.Context, v *viper.Viper, o *MigrationOptions, sqlDb *sql.DB,
 	if err != nil {
 		return nil, errors.Wrap(err, "database open error")
 	}
-	c.Add("gorm_db", db)
 	return db, nil
 }
 

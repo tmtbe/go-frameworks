@@ -4,7 +4,6 @@ import (
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
-	"test/internal/pkg/app"
 )
 
 type PostgresDetailRepository struct {
@@ -21,11 +20,10 @@ func (p *PostgresDetailRepository) FindDetailById(ID uint64) *DetailRecord {
 	return &detail
 }
 
-func NewPostgresDetailsRepository(c *app.Context, logger *zap.Logger, db *gorm.DB) *PostgresDetailRepository {
+func NewPostgresDetailsRepository(logger *zap.Logger, db *gorm.DB) *PostgresDetailRepository {
 	p := &PostgresDetailRepository{
 		logger: logger.With(zap.String("type", "PostgresDetailRepository")),
 		db:     db,
 	}
-	c.Add("detail_repository", p)
 	return p
 }

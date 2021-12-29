@@ -7,7 +7,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
-	"test/internal/pkg/app"
 )
 
 // Options is  configuration of database
@@ -29,12 +28,11 @@ func NewOptions(v *viper.Viper, logger *zap.Logger) (*Options, error) {
 }
 
 // New Init 初始化数据库
-func New(c *app.Context, o *Options) (*sql.DB, error) {
+func New(o *Options) (*sql.DB, error) {
 	sqlDB, err := sql.Open("postgres", o.URL)
 	if err != nil {
 		return nil, errors.Wrap(err, "database open error")
 	}
-	c.Add("sql_db", sqlDB)
 	return sqlDB, nil
 }
 
