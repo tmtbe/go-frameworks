@@ -74,7 +74,7 @@ func CreateApp(cf string) (*app.Application, error) {
 	if err != nil {
 		return nil, err
 	}
-	client, err := redis.New(contextContext, redisOptions)
+	client, err := redis.NewRedis(contextContext, redisOptions)
 	if err != nil {
 		return nil, err
 	}

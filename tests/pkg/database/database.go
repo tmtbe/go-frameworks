@@ -38,7 +38,7 @@ func createPostgres() (testcontainers.GenericContainerRequest, string, func(port
 	return req, port, dbURL
 }
 
-func NewDb(context context.Context, o *database.Options, logger *zap.Logger) (*sql.DB, error) {
+func NewDb(ctx context.Context, o *database.Options, logger *zap.Logger) (*sql.DB, error) {
 	var (
 		req   testcontainers.GenericContainerRequest
 		port  string
@@ -48,11 +48,11 @@ func NewDb(context context.Context, o *database.Options, logger *zap.Logger) (*s
 	case "postgres":
 		req, port, dbURL = createPostgres()
 	}
-	container, err := testcontainers.GenericContainer(context, req)
+	container, err := testcontainers.GenericContainer(ctx, req)
 	if err != nil {
 		return nil, fmt.Errorf("failed to start container: %s", err)
 	}
-	mappedPort, err := container.MappedPort(context, nat.Port(port))
+	mappedPort, err := container.MappedPort(ctx, nat.Port(port))
 	if err != nil {
 		return nil, fmt.Errorf("failed to get container external port: %s", err)
 	}

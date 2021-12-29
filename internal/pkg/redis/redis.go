@@ -26,8 +26,8 @@ func NewOptions(v *viper.Viper, logger *zap.Logger) (*Options, error) {
 	return o, err
 }
 
-// New Init 初始化Redis
-func New(ctx context.Context, o *Options) (*redis.Client, error) {
+// NewRedis Init 初始化Redis
+func NewRedis(ctx context.Context, o *Options) (*redis.Client, error) {
 	if !o.Enable {
 		return nil, nil
 	}
@@ -43,4 +43,4 @@ func New(ctx context.Context, o *Options) (*redis.Client, error) {
 	return client, nil
 }
 
-var ProviderSet = wire.NewSet(New, NewOptions)
+var ProviderSet = wire.NewSet(NewRedis, NewOptions)

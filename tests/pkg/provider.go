@@ -7,9 +7,9 @@ import (
 	"test/internal/pkg/context"
 	"test/internal/pkg/log"
 	"test/internal/pkg/migrate"
-	"test/internal/pkg/redis"
 	"test/internal/pkg/transports/http"
 	"test/tests/pkg/database"
+	"test/tests/pkg/redis"
 	"test/tests/pkg/testcontainer"
 )
 

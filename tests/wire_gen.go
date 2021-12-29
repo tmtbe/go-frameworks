@@ -17,10 +17,10 @@ import (
 	"test/internal/pkg/database"
 	"test/internal/pkg/log"
 	"test/internal/pkg/migrate"
-	"test/internal/pkg/redis"
 	"test/internal/pkg/transports/http"
 	"test/tests/pkg"
 	database2 "test/tests/pkg/database"
+	"test/tests/pkg/redis"
 	"test/tests/pkg/testcontainer"
 )
 
@@ -65,11 +65,7 @@ func CreateBackground(cf string) (*testcontainer.Background, error) {
 	if err != nil {
 		return nil, err
 	}
-	redisOptions, err := redis.NewOptions(viper, logger)
-	if err != nil {
-		return nil, err
-	}
-	client, err := redis.New(contextContext, redisOptions)
+	client, err := redis.NewRedis(contextContext, logger)
 	if err != nil {
 		return nil, err
 	}
