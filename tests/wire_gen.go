@@ -16,11 +16,12 @@ import (
 	"test/internal/app/module1/interfaces/apis"
 	"test/internal/pkg/app"
 	"test/internal/pkg/config"
+	"test/internal/pkg/database"
 	"test/internal/pkg/log"
 	"test/internal/pkg/migrate"
 	"test/internal/pkg/transports/http"
 	"test/tests/pkg"
-	"test/tests/pkg/database"
+	database2 "test/tests/pkg/database"
 	"test/tests/pkg/testcontainer"
 )
 
@@ -43,16 +44,20 @@ func CreateBackground(cf string) (*testcontainer.Background, error) {
 	if err != nil {
 		return nil, err
 	}
+	databaseOptions, err := database.NewOptions(viper, logger)
+	if err != nil {
+		return nil, err
+	}
 	migrationOptions, err := migrate.NewOptions(viper)
 	if err != nil {
 		return nil, err
 	}
 	contextContext := testcontainer.NewTSContext()
-	db, err := database.NewDb(contextContext, logger)
+	db, err := database2.NewDb(contextContext, logger)
 	if err != nil {
 		return nil, err
 	}
-	gormDB, err := migrate.Migrate(viper, migrationOptions, db, logger)
+	gormDB, err := migrate.Migrate(viper, databaseOptions, migrationOptions, db, logger)
 	if err != nil {
 		return nil, err
 	}

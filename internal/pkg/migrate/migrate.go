@@ -9,6 +9,7 @@ import (
 	"go.uber.org/zap"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"test/internal/pkg/database"
 )
 
 type MigrationOptions struct {
@@ -24,11 +25,11 @@ func NewOptions(v *viper.Viper) (*MigrationOptions, error) {
 	return o, err
 }
 
-func Migrate(v *viper.Viper, o *MigrationOptions, sqlDb *sql.DB, logger *zap.Logger) (*gorm.DB, error) {
+func Migrate(v *viper.Viper, o *database.Options, mo *MigrationOptions, sqlDb *sql.DB, logger *zap.Logger) (*gorm.DB, error) {
 	m := &migrate.FileMigrationSource{
-		Dir: v.GetString("resources_path") + o.Dir,
+		Dir: v.GetString("resources_path") + mo.Dir,
 	}
-	n, err := migrate.Exec(sqlDb, "postgres", m, migrate.Up)
+	n, err := migrate.Exec(sqlDb, o.GetDialect(), m, migrate.Up)
 	if err != nil {
 		return nil, errors.Wrap(err, "applying migrations failed")
 	}

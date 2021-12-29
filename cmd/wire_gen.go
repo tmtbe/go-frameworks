@@ -45,11 +45,11 @@ func CreateApp(cf string) (*app.Application, error) {
 	if err != nil {
 		return nil, err
 	}
-	migrationOptions, err := migrate.NewOptions(viper)
+	databaseOptions, err := database.NewOptions(viper, logger)
 	if err != nil {
 		return nil, err
 	}
-	databaseOptions, err := database.NewOptions(viper, logger)
+	migrationOptions, err := migrate.NewOptions(viper)
 	if err != nil {
 		return nil, err
 	}
@@ -57,7 +57,7 @@ func CreateApp(cf string) (*app.Application, error) {
 	if err != nil {
 		return nil, err
 	}
-	gormDB, err := migrate.Migrate(viper, migrationOptions, db, logger)
+	gormDB, err := migrate.Migrate(viper, databaseOptions, migrationOptions, db, logger)
 	if err != nil {
 		return nil, err
 	}
@@ -77,6 +77,8 @@ func CreateApp(cf string) (*app.Application, error) {
 		Log:    logger,
 		Engine: engine,
 		Server: server,
+		GormDB: gormDB,
+		DB:     db,
 	}
 	appApplication, err := app2.NewApp(appOptions, context, logger, server)
 	if err != nil {

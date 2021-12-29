@@ -11,6 +11,7 @@ import (
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
 	"go.uber.org/zap"
+	"test/internal/pkg/database"
 	"time"
 )
 
@@ -53,4 +54,4 @@ func NewDb(context context.Context, logger *zap.Logger) (*sql.DB, error) {
 	return sqlDB, nil
 }
 
-var ProviderSet = wire.NewSet(NewDb)
+var ProviderSet = wire.NewSet(NewDb, database.NewOptions)
