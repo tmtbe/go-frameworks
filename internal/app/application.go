@@ -24,8 +24,8 @@ func NewOptions(v *viper.Viper, logger *zap.Logger) (*Options, error) {
 	return o, err
 }
 
-func NewApp(o *Options, logger *zap.Logger, hs *http.Server) (*app.Application, error) {
-	a, err := app.New(o.Name, logger, app.HttpServerOption(hs))
+func NewApp(o *Options, context *app.Context, logger *zap.Logger, hs *http.Server) (*app.Application, error) {
+	a, err := app.New(o.Name, context, logger, app.HttpServerOption(hs))
 	if err != nil {
 		return nil, errors.Wrap(err, "new app error")
 	}

@@ -2,6 +2,7 @@ package pkg
 
 import (
 	"github.com/google/wire"
+	"test/internal/pkg/app"
 	"test/internal/pkg/config"
 	"test/internal/pkg/database"
 	"test/internal/pkg/log"
@@ -11,6 +12,7 @@ import (
 )
 
 var ProviderSet = wire.NewSet(
+	app.ProviderSet,
 	log.ProviderSet,
 	config.ProviderSet,
 	database.ProviderSet,
@@ -18,6 +20,7 @@ var ProviderSet = wire.NewSet(
 	http.ProviderSet,
 )
 var TestProviderSet = wire.NewSet(
+	app.ProviderSet,
 	log.ProviderSet,
 	config.ProviderSet,
 	tests.ProviderSet,

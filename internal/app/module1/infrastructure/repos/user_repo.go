@@ -4,6 +4,7 @@ import (
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
+	"test/internal/pkg/app"
 )
 
 type PostgresUserRepository struct {
@@ -20,9 +21,11 @@ func (p PostgresUserRepository) FindUserById(ID uint64) *UserRecord {
 	return &user
 }
 
-func NewPostgresUserRepository(logger *zap.Logger, db *gorm.DB) UserRepository {
-	return &PostgresUserRepository{
+func NewPostgresUserRepository(c *app.Context, logger *zap.Logger, db *gorm.DB) *PostgresUserRepository {
+	p := &PostgresUserRepository{
 		logger: logger.With(zap.String("type", "PostgresUserRepository")),
 		db:     db,
 	}
+	c.Add("user_repository", p)
+	return p
 }

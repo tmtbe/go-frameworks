@@ -12,6 +12,7 @@ import (
 	"test/internal/app/module1/infrastructure"
 	"test/internal/app/module1/infrastructure/repos"
 	"test/internal/pkg"
+	"test/internal/pkg/app"
 	"test/internal/pkg/config"
 	"test/internal/pkg/log"
 	"test/internal/pkg/migrate"
@@ -33,22 +34,23 @@ func CreateTestContext(cf string) (*TestContext, error) {
 	if err != nil {
 		return nil, err
 	}
+	context := app.NewAppContext(viper, logger)
 	migrationOptions, err := migrate.NewOptions(viper)
 	if err != nil {
 		return nil, err
 	}
-	context := tests.NewTSContext()
-	db, err := tests.NewDb(context, logger)
+	contextContext := tests.NewTSContext(context)
+	db, err := tests.NewDb(context, contextContext, logger)
 	if err != nil {
 		return nil, err
 	}
-	gormDB, err := migrate.Migrate(viper, migrationOptions, db, logger)
+	gormDB, err := migrate.Migrate(context, viper, migrationOptions, db, logger)
 	if err != nil {
 		return nil, err
 	}
-	detailRepository := repos.NewPostgresDetailsRepository(logger, gormDB)
-	userRepository := repos.NewPostgresUserRepository(logger, gormDB)
-	userDetailService := NewUserDetailServiceImpl(logger, detailRepository, userRepository)
+	detailRepository := repos.NewPostgresDetailsRepository(context, logger, gormDB)
+	userRepository := repos.NewPostgresUserRepository(context, logger, gormDB)
+	userDetailService := NewUserDetailServiceImpl(context, logger, detailRepository, userRepository)
 	testContext := NewTestContext(userDetailService, gormDB)
 	return testContext, nil
 }

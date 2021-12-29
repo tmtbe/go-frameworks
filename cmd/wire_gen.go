@@ -18,6 +18,7 @@ import (
 	"test/internal/pkg/config"
 	"test/internal/pkg/database"
 	"test/internal/pkg/log"
+	"test/internal/pkg/migrate"
 	"test/internal/pkg/transports/http"
 )
 
@@ -40,7 +41,12 @@ func CreateApp(cf string) (*app.Application, error) {
 	if err != nil {
 		return nil, err
 	}
+	context := app.NewAppContext(viper, logger)
 	httpOptions, err := http.NewOptions(viper)
+	if err != nil {
+		return nil, err
+	}
+	migrationOptions, err := migrate.NewOptions(viper)
 	if err != nil {
 		return nil, err
 	}
@@ -48,18 +54,18 @@ func CreateApp(cf string) (*app.Application, error) {
 	if err != nil {
 		return nil, err
 	}
-	db, err := database.New(databaseOptions)
+	db, err := database.New(context, databaseOptions)
 	if err != nil {
 		return nil, err
 	}
-	gormDB, err := database.Migrate(viper, databaseOptions, db, logger)
+	gormDB, err := migrate.Migrate(context, viper, migrationOptions, db, logger)
 	if err != nil {
 		return nil, err
 	}
-	detailRepository := repos.NewPostgresDetailsRepository(logger, gormDB)
-	userRepository := repos.NewPostgresUserRepository(logger, gormDB)
-	userDetailService := services.NewUserDetailServiceImpl(logger, detailRepository, userRepository)
-	userDetailApplication := application.NewDetailsApplication(logger, userDetailService)
+	postgresDetailRepository := repos.NewPostgresDetailsRepository(context, logger, gormDB)
+	postgresUserRepository := repos.NewPostgresUserRepository(context, logger, gormDB)
+	userDetailServiceImpl := services.NewUserDetailServiceImpl(context, logger, postgresDetailRepository, postgresUserRepository)
+	userDetailApplication := application.NewDetailsApplication(context, logger, userDetailServiceImpl)
 	v := interfaces.NewAPIS(logger, userDetailApplication)
 	initControllers := apis.CreateInitControllersFn(v...)
 	engine := http.NewRouter(httpOptions, logger, initControllers)
@@ -67,7 +73,7 @@ func CreateApp(cf string) (*app.Application, error) {
 	if err != nil {
 		return nil, err
 	}
-	appApplication, err := app2.NewApp(appOptions, logger, server)
+	appApplication, err := app2.NewApp(appOptions, context, logger, server)
 	if err != nil {
 		return nil, err
 	}

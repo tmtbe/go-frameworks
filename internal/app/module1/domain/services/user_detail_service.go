@@ -4,6 +4,7 @@ import (
 	"go.uber.org/zap"
 	"test/internal/app/module1/domain/exceptions"
 	"test/internal/app/module1/infrastructure/repos"
+	"test/internal/pkg/app"
 )
 
 type UserDetailServiceImpl struct {
@@ -12,15 +13,19 @@ type UserDetailServiceImpl struct {
 	userRepository   repos.UserRepository
 }
 
-func NewUserDetailServiceImpl(logger *zap.Logger,
+func NewUserDetailServiceImpl(
+	c *app.Context,
+	logger *zap.Logger,
 	detailRepository repos.DetailRepository,
 	userRepository repos.UserRepository,
-) UserDetailService {
-	return &UserDetailServiceImpl{
+) *UserDetailServiceImpl {
+	u := &UserDetailServiceImpl{
 		logger:           logger.With(zap.String("type", "UserDetailServiceImpl")),
 		detailRepository: detailRepository,
 		userRepository:   userRepository,
 	}
+	c.Add("user_detail_service", u)
+	return u
 }
 
 func (s *UserDetailServiceImpl) GetUserDetail(ID uint64) (p *UserDetail, err error) {
