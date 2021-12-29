@@ -18,12 +18,15 @@ type Background struct {
 	TestContainersContext context.Context
 }
 
-func (bg *Background) SetUpDb(name string) {
+func (bg *Background) MustSetUpDb(name string) {
 	sqls, err := ioutil.ReadFile("./sql/" + name + ".sql")
 	if err != nil {
 		panic(err)
 	}
-	stmt := string(sqls)
+	bg.MustSetUpDbWithSql(string(sqls))
+}
+
+func (bg *Background) MustSetUpDbWithSql(stmt string) {
 	stmt = strings.TrimSuffix(stmt, "\n")
 	stmt = strings.TrimSuffix(stmt, " ")
 	stmt = strings.TrimSuffix(stmt, ";")

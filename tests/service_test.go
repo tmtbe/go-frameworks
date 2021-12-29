@@ -7,7 +7,7 @@ import (
 
 func TestDetailsRepository_GetUserDetail(t *testing.T) {
 	background := setUp()
-	background.SetUpDb("get_user_detail")
+	background.MustSetUpDb("get_user_detail")
 	detail, err := background.UserDetailService.GetUserDetail(1)
 	if err != nil {
 		t.Fatalf("userDetail service get userDetail error,%+v", err)
