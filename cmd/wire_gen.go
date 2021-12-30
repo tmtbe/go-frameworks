@@ -8,6 +8,11 @@ package main
 import (
 	"github.com/google/wire"
 	app2 "test/internal/app"
+	context2 "test/internal/app/context"
+	"test/internal/app/module1/application"
+	"test/internal/app/module1/domain/services"
+	"test/internal/app/module1/infrastructure/repos"
+	"test/internal/app/module1/interfaces/apis"
 	"test/internal/pkg"
 	"test/internal/pkg/app"
 	"test/internal/pkg/cachestore"
@@ -98,18 +103,32 @@ func CreateApp(cf string) (*app.Application, func(), error) {
 		CacheStore:    redisStore,
 		Context:       contextContext,
 	}
+	api := apis.NewAPI(logger, appInfraContext)
+	postgresDetailRepository := repos.NewPostgresDetailsRepository(logger, gormDB)
+	postgresUserRepository := repos.NewPostgresUserRepository(logger, gormDB)
+	userDetailServiceImpl := services.NewUserDetailServiceImpl(logger, postgresDetailRepository, postgresUserRepository)
+	userDetailApplication := application.NewUserDetailsApplication(logger, userDetailServiceImpl)
+	userDetailAPI := apis.NewUserDetailAPI(api, userDetailApplication)
+	appContext := &context2.AppContext{
+		InfraContext:          appInfraContext,
+		UserDetailAPI:         userDetailAPI,
+		UserDetailApplication: userDetailApplication,
+		UserRepository:        postgresUserRepository,
+		DetailRepository:      postgresDetailRepository,
+		UserDetailService:     userDetailServiceImpl,
+	}
 	server, cleanup2, err := http.NewServer(httpOptions, logger, engine)
 	if err != nil {
 		cleanup()
 		return nil, nil, err
 	}
-	application, cleanup3, err := app2.NewApp(appOptions, appInfraContext, logger, server)
+	appApplication, cleanup3, err := app2.NewApp(appOptions, appContext, logger, server)
 	if err != nil {
 		cleanup2()
 		cleanup()
 		return nil, nil, err
 	}
-	return application, func() {
+	return appApplication, func() {
 		cleanup3()
 		cleanup2()
 		cleanup()

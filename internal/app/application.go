@@ -7,7 +7,6 @@ import (
 	"go.uber.org/zap"
 	"test/internal/app/context"
 	"test/internal/pkg/app"
-	context2 "test/internal/pkg/context"
 	"test/internal/pkg/transports/http"
 )
 
@@ -25,8 +24,8 @@ func NewOptions(v *viper.Viper, logger *zap.Logger) (*Options, error) {
 	return o, err
 }
 
-func NewApp(o *Options, context *context2.AppInfraContext, logger *zap.Logger, hs *http.Server) (*app.Application, func(), error) {
-	a, err := app.New(o.Name, context, logger, app.HttpServerOption(hs))
+func NewApp(o *Options, appCtx *context.AppContext, logger *zap.Logger, hs *http.Server) (*app.Application, func(), error) {
+	a, err := app.New(o.Name, appCtx.InfraContext, logger, app.HttpServerOption(hs))
 	if err != nil {
 		return nil, nil, errors.Wrap(err, "new app error")
 	}

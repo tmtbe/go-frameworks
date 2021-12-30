@@ -20,6 +20,7 @@ log:
   level: "debug"
   stdout: true
 telemetry:
+  enable: true
   serviceName: test
   endpoint: "localhost:4317"
   insecure: true

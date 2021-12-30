@@ -19,6 +19,7 @@ import (
 )
 
 type Options struct {
+	Enable      bool
 	ServiceName string
 	Endpoint    string
 	Token       string
@@ -39,6 +40,9 @@ type Init struct {
 }
 
 func NewInit(ctx context.Context, o *Options, logger *zap.Logger, engine *gin.Engine) (*Init, func()) {
+	if !o.Enable {
+		return &Init{}, nil
+	}
 	engine.Use(otelgin.Middleware(o.ServiceName))
 	secureOption := otlptracegrpc.WithTLSCredentials(credentials.NewClientTLSFromCert(nil, ""))
 	if o.Insecure {
