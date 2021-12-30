@@ -10,6 +10,7 @@ type Middleware interface {
 	GetMiddleware() gin.HandlerFunc
 }
 
+// NewMiddlewares 这里注册中间件
 func NewMiddlewares(telemetryMiddleware *telemetry.Middleware) ([]Middleware, func()) {
 	var middlewares = []Middleware{
 		telemetryMiddleware,
