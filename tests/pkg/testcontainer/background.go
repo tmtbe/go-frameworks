@@ -9,7 +9,7 @@ import (
 )
 
 type Background struct {
-	*app_context.Context
+	*app_context.AppContext
 	TestContainersContext context.Context
 }
 
@@ -25,7 +25,7 @@ func (bg *Background) MustSetUpDbWithSql(stmt string) {
 	stmt = strings.TrimSuffix(stmt, "\n")
 	stmt = strings.TrimSuffix(stmt, " ")
 	stmt = strings.TrimSuffix(stmt, ";")
-	if _, err := bg.DB.Exec(stmt); err != nil {
+	if _, err := bg.GetDB().Exec(stmt); err != nil {
 		panic(err)
 	}
 }

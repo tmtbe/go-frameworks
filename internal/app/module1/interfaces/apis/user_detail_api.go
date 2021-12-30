@@ -13,15 +13,17 @@ type UserDetailAPI struct {
 	application *application.UserDetailApplication
 }
 
-func (dc *UserDetailAPI) GetRoute() {
-	dc.ctx.Route.GET("/detail", cache.CacheByRequestURI(dc.ctx.CacheStore, 2*time.Second), wrapper(dc.GetUserDetail))
-}
-
 func NewUserDetailAPI(api *API, a *application.UserDetailApplication) *UserDetailAPI {
-	return &UserDetailAPI{
+	v := &UserDetailAPI{
 		API:         *api,
 		application: a,
 	}
+	v.Init()
+	return v
+}
+
+func (dc *UserDetailAPI) Init() {
+	dc.ctx.GetRoute().GET("/detail", cache.CacheByRequestURI(dc.ctx.GetCacheStore(), 2*time.Second), wrapper(dc.GetUserDetail))
 }
 
 func (dc *UserDetailAPI) GetUserDetail(c *gin.Context) (interface{}, error) {

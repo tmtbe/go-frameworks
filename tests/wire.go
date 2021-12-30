@@ -15,6 +15,6 @@ var ProviderSet = wire.NewSet(
 	pkg.ProviderSet,
 )
 
-func CreateBackground(cf string) (*testcontainer.Background, error) {
+func CreateBackground(cf string) (*testcontainer.Background, func(), error) {
 	panic(wire.Build(ProviderSet))
 }

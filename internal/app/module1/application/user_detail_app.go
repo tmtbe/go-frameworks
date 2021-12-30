@@ -10,7 +10,7 @@ type UserDetailApplication struct {
 	service services.UserDetailService
 }
 
-func NewDetailsApplication(logger *zap.Logger, s services.UserDetailService) *UserDetailApplication {
+func NewUserDetailsApplication(logger *zap.Logger, s services.UserDetailService) *UserDetailApplication {
 	u := &UserDetailApplication{
 		logger:  logger,
 		service: s,

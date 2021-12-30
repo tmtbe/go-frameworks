@@ -8,12 +8,6 @@ package main
 import (
 	"github.com/google/wire"
 	app2 "test/internal/app"
-	context2 "test/internal/app/context"
-	"test/internal/app/module1/application"
-	"test/internal/app/module1/domain/services"
-	"test/internal/app/module1/infrastructure/repos"
-	"test/internal/app/module1/interfaces"
-	"test/internal/app/module1/interfaces/apis"
 	"test/internal/pkg"
 	"test/internal/pkg/app"
 	"test/internal/pkg/cachestore"
@@ -93,7 +87,7 @@ func CreateApp(cf string) (*app.Application, func(), error) {
 		return nil, nil, err
 	}
 	redisStore := cachestore.NewRedisCache(client)
-	appContext := &context.AppContext{
+	appInfraContext := &context.AppInfraContext{
 		MigrateInit:   init,
 		TelemetryInit: telemetryInit,
 		Config:        viper,
@@ -104,32 +98,18 @@ func CreateApp(cf string) (*app.Application, func(), error) {
 		CacheStore:    redisStore,
 		Context:       contextContext,
 	}
-	postgresDetailRepository := repos.NewPostgresDetailsRepository(logger, gormDB)
-	postgresUserRepository := repos.NewPostgresUserRepository(logger, gormDB)
-	userDetailServiceImpl := services.NewUserDetailServiceImpl(logger, postgresDetailRepository, postgresUserRepository)
-	userDetailApplication := application.NewDetailsApplication(logger, userDetailServiceImpl)
-	context3 := &context2.Context{
-		AppContext:            appContext,
-		UserDetailApplication: userDetailApplication,
-		UserRepository:        postgresUserRepository,
-		DetailRepository:      postgresDetailRepository,
-		UserDetailService:     userDetailServiceImpl,
-	}
-	api := apis.NewAPI(logger, context3)
-	userDetailAPI := apis.NewUserDetailAPI(api, userDetailApplication)
-	v := interfaces.NewAPIS(userDetailAPI)
-	server, cleanup2, err := http.NewServer(httpOptions, logger, appContext, v)
+	server, cleanup2, err := http.NewServer(httpOptions, logger, engine)
 	if err != nil {
 		cleanup()
 		return nil, nil, err
 	}
-	appApplication, cleanup3, err := app2.NewApp(appOptions, appContext, logger, server)
+	application, cleanup3, err := app2.NewApp(appOptions, appInfraContext, logger, server)
 	if err != nil {
 		cleanup2()
 		cleanup()
 		return nil, nil, err
 	}
-	return appApplication, func() {
+	return application, func() {
 		cleanup3()
 		cleanup2()
 		cleanup()

@@ -9,16 +9,18 @@ import (
 	"github.com/google/wire"
 	"test/internal/app"
 	context2 "test/internal/app/context"
+	"test/internal/app/module1/application"
 	"test/internal/app/module1/domain/services"
 	"test/internal/app/module1/infrastructure/repos"
+	"test/internal/app/module1/interfaces/apis"
 	"test/internal/pkg/cachestore"
 	"test/internal/pkg/config"
-	pkg2 "test/internal/pkg/context"
 	"test/internal/pkg/database"
 	"test/internal/pkg/log"
 	"test/internal/pkg/migrate"
 	"test/internal/pkg/transports/http"
 	"test/tests/pkg"
+	"test/tests/pkg/context"
 	database2 "test/tests/pkg/database"
 	"test/tests/pkg/redis"
 	"test/tests/pkg/testcontainer"
@@ -30,69 +32,80 @@ import (
 
 // Injectors from wire.go:
 
-func CreateBackground(cf string) (*testcontainer.Background, error) {
+func CreateBackground(cf string) (*testcontainer.Background, func(), error) {
 	viper, err := config.New(cf)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	options, err := log.NewOptions(viper)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	logger, err := log.New(options)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	httpOptions, err := http.NewOptions(viper)
-	if err != nil {
-		return nil, err
-	}
-	engine := http.NewGin(httpOptions, logger)
 	databaseOptions, err := database.NewOptions(viper, logger)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	migrationOptions, err := migrate.NewOptions(viper)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	contextContext := pkg2.NewContext()
-	db, err := database2.NewDb(contextContext, databaseOptions, logger)
+	contextContext := context.NewContext()
+	db, err := database2.NewSQlDb(contextContext, databaseOptions, logger)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	gormDB, err := migrate.Migrate(viper, databaseOptions, migrationOptions, db, logger)
+	init, err := migrate.NewInit(viper, databaseOptions, migrationOptions, db, logger)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
+	}
+	httpOptions, err := http.NewOptions(viper)
+	if err != nil {
+		return nil, nil, err
+	}
+	engine := http.NewGin(httpOptions, logger)
+	gormDB, err := database.NewGormDb(db, logger)
+	if err != nil {
+		return nil, nil, err
 	}
 	client, err := redis.NewRedis(contextContext, logger)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	redisStore := cachestore.NewRedisCache(client)
-	appContext := &pkg2.AppContext{
-		Config:     viper,
-		Log:        logger,
-		Route:      engine,
-		GormDB:     gormDB,
-		DB:         db,
-		CacheStore: redisStore,
-		Context:    contextContext,
+	testInfraContext := &context.TestInfraContext{
+		MigrateInit: init,
+		Config:      viper,
+		Log:         logger,
+		Route:       engine,
+		GormDB:      gormDB,
+		DB:          db,
+		CacheStore:  redisStore,
+		Context:     contextContext,
 	}
-	postgresUserRepository := repos.NewPostgresUserRepository(logger, gormDB)
+	api := apis.NewAPI(logger, testInfraContext)
 	postgresDetailRepository := repos.NewPostgresDetailsRepository(logger, gormDB)
+	postgresUserRepository := repos.NewPostgresUserRepository(logger, gormDB)
 	userDetailServiceImpl := services.NewUserDetailServiceImpl(logger, postgresDetailRepository, postgresUserRepository)
-	context3 := &context2.Context{
-		AppContext:        appContext,
-		UserRepository:    postgresUserRepository,
-		DetailRepository:  postgresDetailRepository,
-		UserDetailService: userDetailServiceImpl,
+	userDetailApplication := application.NewUserDetailsApplication(logger, userDetailServiceImpl)
+	userDetailAPI := apis.NewUserDetailAPI(api, userDetailApplication)
+	appContext := &context2.AppContext{
+		InfraContext:          testInfraContext,
+		UserDetailAPI:         userDetailAPI,
+		UserDetailApplication: userDetailApplication,
+		UserRepository:        postgresUserRepository,
+		DetailRepository:      postgresDetailRepository,
+		UserDetailService:     userDetailServiceImpl,
 	}
 	background := &testcontainer.Background{
-		Context:               context3,
+		AppContext:            appContext,
 		TestContainersContext: contextContext,
 	}
-	return background, nil
+	return background, func() {
+	}, nil
 }
 
 // wire.go:

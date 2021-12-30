@@ -10,9 +10,10 @@ var resourcesPath = flag.String("f", "../.", "set resources file which viper wil
 
 func setUp() *testcontainer.Background {
 	flag.Parse()
-	testContext, err := CreateBackground(*resourcesPath)
+	background, clean, err := CreateBackground(*resourcesPath)
+	defer clean()
 	if err != nil {
 		panic(err)
 	}
-	return testContext
+	return background
 }

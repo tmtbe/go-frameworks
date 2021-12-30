@@ -14,7 +14,7 @@ type Application struct {
 	name       string
 	logger     *zap.Logger
 	httpServer *http.Server
-	context    *context2.AppContext
+	context    *context2.AppInfraContext
 }
 
 type Option func(app *Application) error
@@ -28,7 +28,7 @@ func HttpServerOption(svr *http.Server) Option {
 	}
 }
 
-func New(name string, context *context2.AppContext, logger *zap.Logger, options ...Option) (*Application, error) {
+func New(name string, context *context2.AppInfraContext, logger *zap.Logger, options ...Option) (*Application, error) {
 	app := &Application{
 		name:    name,
 		logger:  logger.With(zap.String("type", "Application")),

@@ -10,7 +10,6 @@ import (
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
 	"net/http"
-	context2 "test/internal/pkg/context"
 	"test/internal/pkg/utils/netutil"
 	"time"
 )
@@ -43,10 +42,6 @@ func NewOptions(v *viper.Viper) (*Options, error) {
 	return o, err
 }
 
-type Controller interface {
-	GetRoute()
-}
-
 func NewGin(o *Options, logger *zap.Logger) *gin.Engine {
 	// 配置gin
 	gin.SetMode(o.Mode)
@@ -60,15 +55,11 @@ func NewGin(o *Options, logger *zap.Logger) *gin.Engine {
 func NewServer(
 	o *Options,
 	logger *zap.Logger,
-	ctx *context2.AppContext,
-	cs []Controller,
+	route *gin.Engine,
 ) (*Server, func(), error) {
-	for _, c := range cs {
-		c.GetRoute()
-	}
 	var s = &Server{
 		logger: logger.With(zap.String("type", "http.Server")),
-		router: ctx.Route,
+		router: route,
 		o:      o,
 	}
 	return s, nil, nil

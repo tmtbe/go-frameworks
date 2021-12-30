@@ -38,7 +38,7 @@ func createPostgres() (testcontainers.GenericContainerRequest, string, func(port
 	return req, port, dbURL
 }
 
-func NewDb(ctx context.Context, o *database.Options, logger *zap.Logger) (*sql.DB, error) {
+func NewSQlDb(ctx context.Context, o *database.Options, logger *zap.Logger) (*sql.DB, error) {
 	var (
 		req   testcontainers.GenericContainerRequest
 		port  string
@@ -60,4 +60,4 @@ func NewDb(ctx context.Context, o *database.Options, logger *zap.Logger) (*sql.D
 	return sql.Open(o.GetDialect(), dbURL(mappedPort))
 }
 
-var ProviderSet = wire.NewSet(NewDb, database.NewOptions)
+var ProviderSet = wire.NewSet(NewSQlDb, database.NewGormDb, database.NewOptions)

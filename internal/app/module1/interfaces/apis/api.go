@@ -4,17 +4,17 @@ import (
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 	"net/http"
-	appContext "test/internal/app/context"
 	"test/internal/app/module1/infrastructure/exceptions"
 	exception2 "test/internal/app/module1/interfaces/exceptions"
+	"test/internal/pkg/context"
 )
 
 type API struct {
 	logger *zap.Logger
-	ctx    *appContext.Context
+	ctx    context.InfraContext
 }
 
-func NewAPI(logger *zap.Logger, ctx *appContext.Context) *API {
+func NewAPI(logger *zap.Logger, ctx context.InfraContext) *API {
 	return &API{
 		logger: logger,
 		ctx:    ctx,
