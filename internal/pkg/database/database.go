@@ -22,6 +22,7 @@ func (o *Options) GetDialect() string {
 func NewOptions(v *viper.Viper, logger *zap.Logger) (*Options, error) {
 	var err error
 	o := new(Options)
+	v.SetDefault("db.enable", true)
 	if err = v.UnmarshalKey("db", o); err != nil {
 		return nil, errors.Wrap(err, "unmarshal db option error")
 	}

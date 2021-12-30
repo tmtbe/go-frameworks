@@ -3,25 +3,23 @@ package apis
 import (
 	cache "github.com/chenyahui/gin-cache"
 	"github.com/gin-gonic/gin"
-	"go.uber.org/zap"
 	"test/internal/app/module1/application"
 	"test/internal/app/module1/interfaces/exceptions"
-	"test/internal/pkg/context"
 	"time"
 )
 
 type UserDetailAPI struct {
-	logger      *zap.Logger
+	API
 	application *application.UserDetailApplication
 }
 
-func (dc *UserDetailAPI) GetRoute(ctx *context.AppContext) {
-	ctx.Route.GET("/detail", cache.CacheByRequestURI(ctx.CacheStore, 2*time.Second), wrapper(dc.GetUserDetail))
+func (dc *UserDetailAPI) GetRoute() {
+	dc.ctx.Route.GET("/detail", cache.CacheByRequestURI(dc.ctx.CacheStore, 2*time.Second), wrapper(dc.GetUserDetail))
 }
 
-func NewUserDetailAPI(logger *zap.Logger, a *application.UserDetailApplication) *UserDetailAPI {
+func NewUserDetailAPI(api *API, a *application.UserDetailApplication) *UserDetailAPI {
 	return &UserDetailAPI{
-		logger:      logger,
+		API:         *api,
 		application: a,
 	}
 }

@@ -8,6 +8,7 @@ package main
 import (
 	"github.com/google/wire"
 	app2 "test/internal/app"
+	context2 "test/internal/app/context"
 	"test/internal/app/module1/application"
 	"test/internal/app/module1/domain/services"
 	"test/internal/app/module1/infrastructure/repos"
@@ -22,7 +23,9 @@ import (
 	"test/internal/pkg/log"
 	"test/internal/pkg/migrate"
 	"test/internal/pkg/redis"
+	"test/internal/pkg/telemetry"
 	"test/internal/pkg/transports/http"
+	"test/internal/pkg/transports/http/middlewares"
 )
 
 import (
@@ -31,52 +34,52 @@ import (
 
 // Injectors from wire.go:
 
-func CreateApp(cf string) (*app.Application, error) {
+func CreateApp(cf string) (*app.Application, func(), error) {
 	viper, err := config.New(cf)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	options, err := log.NewOptions(viper)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	logger, err := log.New(options)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	appOptions, err := app2.NewOptions(viper, logger)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	httpOptions, err := http.NewOptions(viper)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	engine := http.NewGin(httpOptions, logger)
 	databaseOptions, err := database.NewOptions(viper, logger)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	migrationOptions, err := migrate.NewOptions(viper)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	db, err := database.New(databaseOptions)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	gormDB, err := migrate.Migrate(viper, databaseOptions, migrationOptions, db, logger)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	contextContext := context.NewContext()
 	redisOptions, err := redis.NewOptions(viper, logger)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	client, err := redis.NewRedis(contextContext, redisOptions)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	redisStore := cachestore.NewRedisCache(client)
 	appContext := &context.AppContext{
@@ -92,17 +95,41 @@ func CreateApp(cf string) (*app.Application, error) {
 	postgresUserRepository := repos.NewPostgresUserRepository(logger, gormDB)
 	userDetailServiceImpl := services.NewUserDetailServiceImpl(logger, postgresDetailRepository, postgresUserRepository)
 	userDetailApplication := application.NewDetailsApplication(logger, userDetailServiceImpl)
-	v := interfaces.NewAPIS(logger, userDetailApplication)
-	initControllers := apis.CreateInitControllersFn(v...)
-	server, err := http.NewServer(httpOptions, logger, appContext, initControllers)
-	if err != nil {
-		return nil, err
+	context3 := &context2.Context{
+		AppContext:            appContext,
+		UserDetailApplication: userDetailApplication,
+		UserRepository:        postgresUserRepository,
+		DetailRepository:      postgresDetailRepository,
+		UserDetailService:     userDetailServiceImpl,
 	}
-	appApplication, err := app2.NewApp(appOptions, appContext, logger, server)
+	api := apis.NewAPI(logger, context3)
+	userDetailAPI := apis.NewUserDetailAPI(api, userDetailApplication)
+	v := interfaces.NewAPIS(userDetailAPI)
+	telemetryOptions, err := telemetry.NewOptions(viper, logger)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	return appApplication, nil
+	middleware, cleanup := telemetry.NewTracerMiddleware(contextContext, telemetryOptions, logger)
+	v2, cleanup2 := middlewares.NewMiddlewares(middleware)
+	server, cleanup3, err := http.NewServer(httpOptions, logger, appContext, v, v2)
+	if err != nil {
+		cleanup2()
+		cleanup()
+		return nil, nil, err
+	}
+	appApplication, cleanup4, err := app2.NewApp(appOptions, appContext, logger, server)
+	if err != nil {
+		cleanup3()
+		cleanup2()
+		cleanup()
+		return nil, nil, err
+	}
+	return appApplication, func() {
+		cleanup4()
+		cleanup3()
+		cleanup2()
+		cleanup()
+	}, nil
 }
 
 // wire.go:

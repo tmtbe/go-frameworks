@@ -26,12 +26,12 @@ func NewOptions(v *viper.Viper, logger *zap.Logger) (*Options, error) {
 	return o, err
 }
 
-func NewApp(o *Options, context *context2.AppContext, logger *zap.Logger, hs *http.Server) (*app.Application, error) {
+func NewApp(o *Options, context *context2.AppContext, logger *zap.Logger, hs *http.Server) (*app.Application, func(), error) {
 	a, err := app.New(o.Name, context, logger, app.HttpServerOption(hs))
 	if err != nil {
-		return nil, errors.Wrap(err, "new app error")
+		return nil, nil, errors.Wrap(err, "new app error")
 	}
-	return a, nil
+	return a, nil, nil
 }
 
 var ProviderSet = wire.NewSet(

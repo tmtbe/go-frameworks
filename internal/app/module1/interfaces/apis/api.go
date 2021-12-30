@@ -2,12 +2,24 @@ package apis
 
 import (
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 	"net/http"
+	appContext "test/internal/app/context"
 	"test/internal/app/module1/infrastructure/exceptions"
 	exception2 "test/internal/app/module1/interfaces/exceptions"
-	"test/internal/pkg/context"
-	th "test/internal/pkg/transports/http"
 )
+
+type API struct {
+	logger *zap.Logger
+	ctx    *appContext.Context
+}
+
+func NewAPI(logger *zap.Logger, ctx *appContext.Context) *API {
+	return &API{
+		logger: logger,
+		ctx:    ctx,
+	}
+}
 
 type HandlerFunc func(c *gin.Context) (interface{}, error)
 
@@ -38,16 +50,6 @@ func wrapper(handler HandlerFunc) func(c *gin.Context) {
 			return
 		} else {
 			c.JSON(http.StatusOK, body)
-		}
-	}
-}
-
-func CreateInitControllersFn(
-	pc ...th.Controller,
-) th.InitControllers {
-	return func(ctx *context.AppContext) {
-		for _, c := range pc {
-			c.GetRoute(ctx)
 		}
 	}
 }

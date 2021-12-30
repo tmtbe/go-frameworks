@@ -9,7 +9,8 @@ var resourcesPath = flag.String("f", ".", "set resources path viper will loading
 
 func main() {
 	flag.Parse()
-	application, err := CreateApp(*resourcesPath)
+	application, clean, err := CreateApp(*resourcesPath)
+	defer clean()
 	if err != nil {
 		panic(err)
 	}
