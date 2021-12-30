@@ -11,7 +11,6 @@ import (
 	"go.uber.org/zap"
 	"net/http"
 	context2 "test/internal/pkg/context"
-	"test/internal/pkg/transports/http/middlewares"
 	"test/internal/pkg/utils/netutil"
 	"time"
 )
@@ -63,13 +62,9 @@ func NewServer(
 	logger *zap.Logger,
 	ctx *context2.AppContext,
 	cs []Controller,
-	middlewares []middlewares.Middleware,
 ) (*Server, func(), error) {
 	for _, c := range cs {
 		c.GetRoute()
-	}
-	for _, m := range middlewares {
-		ctx.Route.Use(m.GetMiddleware())
 	}
 	var s = &Server{
 		logger: logger.With(zap.String("type", "http.Server")),
@@ -88,17 +83,12 @@ func (s *Server) Start() error {
 	if s.port == 0 {
 		s.port = netutil.GetAvailablePort()
 	}
-
 	s.host = netutil.GetLocalIP4()
-
 	if s.host == "" {
 		return errors.New("get local ipv4 error")
 	}
-
 	addr := fmt.Sprintf("%s:%d", s.host, s.port)
-
 	s.httpServer = http.Server{Addr: addr, Handler: s.router}
-
 	s.logger.Info("http server starting ...", zap.String("addr", addr))
 	go func() {
 		if err := s.httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
@@ -119,4 +109,4 @@ func (s *Server) Stop() error {
 	return nil
 }
 
-var ProviderSet = wire.NewSet(NewServer, NewGin, NewOptions, middlewares.ProviderSet)
+var ProviderSet = wire.NewSet(NewServer, NewGin, NewOptions)

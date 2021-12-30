@@ -19,7 +19,6 @@ type Options struct {
 func NewOptions(v *viper.Viper, logger *zap.Logger) (*Options, error) {
 	var err error
 	o := new(Options)
-	v.SetDefault("db.enable", true)
 	if err = v.UnmarshalKey("redis", o); err != nil {
 		return nil, errors.Wrap(err, "unmarshal redis option error")
 	}

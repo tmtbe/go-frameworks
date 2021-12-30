@@ -25,7 +25,6 @@ import (
 	"test/internal/pkg/redis"
 	"test/internal/pkg/telemetry"
 	"test/internal/pkg/transports/http"
-	"test/internal/pkg/transports/http/middlewares"
 )
 
 import (
@@ -51,11 +50,6 @@ func CreateApp(cf string) (*app.Application, func(), error) {
 	if err != nil {
 		return nil, nil, err
 	}
-	httpOptions, err := http.NewOptions(viper)
-	if err != nil {
-		return nil, nil, err
-	}
-	engine := http.NewGin(httpOptions, logger)
 	databaseOptions, err := database.NewOptions(viper, logger)
 	if err != nil {
 		return nil, nil, err
@@ -64,32 +58,51 @@ func CreateApp(cf string) (*app.Application, func(), error) {
 	if err != nil {
 		return nil, nil, err
 	}
-	db, err := database.New(databaseOptions)
+	db, err := database.NewSqlDb(databaseOptions)
 	if err != nil {
 		return nil, nil, err
 	}
-	gormDB, err := migrate.Migrate(viper, databaseOptions, migrationOptions, db, logger)
+	init, err := migrate.NewInit(viper, databaseOptions, migrationOptions, db, logger)
 	if err != nil {
 		return nil, nil, err
 	}
 	contextContext := context.NewContext()
+	telemetryOptions, err := telemetry.NewOptions(viper, logger)
+	if err != nil {
+		return nil, nil, err
+	}
+	httpOptions, err := http.NewOptions(viper)
+	if err != nil {
+		return nil, nil, err
+	}
+	engine := http.NewGin(httpOptions, logger)
+	telemetryInit, cleanup := telemetry.NewInit(contextContext, telemetryOptions, logger, engine)
+	gormDB, err := database.NewGormDb(db, logger)
+	if err != nil {
+		cleanup()
+		return nil, nil, err
+	}
 	redisOptions, err := redis.NewOptions(viper, logger)
 	if err != nil {
+		cleanup()
 		return nil, nil, err
 	}
 	client, err := redis.NewRedis(contextContext, redisOptions)
 	if err != nil {
+		cleanup()
 		return nil, nil, err
 	}
 	redisStore := cachestore.NewRedisCache(client)
 	appContext := &context.AppContext{
-		Config:     viper,
-		Log:        logger,
-		Route:      engine,
-		GormDB:     gormDB,
-		DB:         db,
-		CacheStore: redisStore,
-		Context:    contextContext,
+		MigrateInit:   init,
+		TelemetryInit: telemetryInit,
+		Config:        viper,
+		Log:           logger,
+		Route:         engine,
+		GormDB:        gormDB,
+		DB:            db,
+		CacheStore:    redisStore,
+		Context:       contextContext,
 	}
 	postgresDetailRepository := repos.NewPostgresDetailsRepository(logger, gormDB)
 	postgresUserRepository := repos.NewPostgresUserRepository(logger, gormDB)
@@ -105,27 +118,18 @@ func CreateApp(cf string) (*app.Application, func(), error) {
 	api := apis.NewAPI(logger, context3)
 	userDetailAPI := apis.NewUserDetailAPI(api, userDetailApplication)
 	v := interfaces.NewAPIS(userDetailAPI)
-	telemetryOptions, err := telemetry.NewOptions(viper, logger)
+	server, cleanup2, err := http.NewServer(httpOptions, logger, appContext, v)
 	if err != nil {
-		return nil, nil, err
-	}
-	middleware, cleanup := telemetry.NewTracerMiddleware(contextContext, telemetryOptions, logger)
-	v2, cleanup2 := middlewares.NewMiddlewares(middleware)
-	server, cleanup3, err := http.NewServer(httpOptions, logger, appContext, v, v2)
-	if err != nil {
-		cleanup2()
 		cleanup()
 		return nil, nil, err
 	}
-	appApplication, cleanup4, err := app2.NewApp(appOptions, appContext, logger, server)
+	appApplication, cleanup3, err := app2.NewApp(appOptions, appContext, logger, server)
 	if err != nil {
-		cleanup3()
 		cleanup2()
 		cleanup()
 		return nil, nil, err
 	}
 	return appApplication, func() {
-		cleanup4()
 		cleanup3()
 		cleanup2()
 		cleanup()

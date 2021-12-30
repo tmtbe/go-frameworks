@@ -4,10 +4,12 @@ http:
   mode: release
   port: 8081
 db:
+  enable: true
   url: "postgres://root:root@localhost:5432/test?sslmode=disable"
   migrations:
     dir: "/resources/db/migrations"
 redis:
+  enable: true
   network: "tcp"
   url: "localhost:6379"
 log:

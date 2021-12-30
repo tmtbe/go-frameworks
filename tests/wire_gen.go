@@ -13,7 +13,7 @@ import (
 	"test/internal/app/module1/infrastructure/repos"
 	"test/internal/pkg/cachestore"
 	"test/internal/pkg/config"
-	"test/internal/pkg/context"
+	pkg2 "test/internal/pkg/context"
 	"test/internal/pkg/database"
 	"test/internal/pkg/log"
 	"test/internal/pkg/migrate"
@@ -56,7 +56,7 @@ func CreateBackground(cf string) (*testcontainer.Background, error) {
 	if err != nil {
 		return nil, err
 	}
-	contextContext := context.NewContext()
+	contextContext := pkg2.NewContext()
 	db, err := database2.NewDb(contextContext, databaseOptions, logger)
 	if err != nil {
 		return nil, err
@@ -70,7 +70,7 @@ func CreateBackground(cf string) (*testcontainer.Background, error) {
 		return nil, err
 	}
 	redisStore := cachestore.NewRedisCache(client)
-	appContext := &context.AppContext{
+	appContext := &pkg2.AppContext{
 		Config:     viper,
 		Log:        logger,
 		Route:      engine,

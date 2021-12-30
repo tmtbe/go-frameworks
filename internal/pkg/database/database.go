@@ -6,6 +6,8 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 	"strings"
 )
 
@@ -22,7 +24,6 @@ func (o *Options) GetDialect() string {
 func NewOptions(v *viper.Viper, logger *zap.Logger) (*Options, error) {
 	var err error
 	o := new(Options)
-	v.SetDefault("db.enable", true)
 	if err = v.UnmarshalKey("db", o); err != nil {
 		return nil, errors.Wrap(err, "unmarshal db option error")
 	}
@@ -30,8 +31,8 @@ func NewOptions(v *viper.Viper, logger *zap.Logger) (*Options, error) {
 	return o, err
 }
 
-// New Init 初始化数据库
-func New(o *Options) (*sql.DB, error) {
+// NewSqlDb Init 初始化数据库
+func NewSqlDb(o *Options) (*sql.DB, error) {
 	if !o.Enable {
 		return nil, nil
 	}
@@ -42,4 +43,18 @@ func New(o *Options) (*sql.DB, error) {
 	return sqlDB, nil
 }
 
-var ProviderSet = wire.NewSet(New, NewOptions)
+func NewGormDb(sqlDb *sql.DB, logger *zap.Logger) (*gorm.DB, error) {
+	if sqlDb == nil {
+		logger.Warn("sql db is nil, gorm db will not create")
+		return nil, nil
+	}
+	db, err := gorm.Open(postgres.New(postgres.Config{
+		Conn: sqlDb,
+	}), &gorm.Config{})
+	if err != nil {
+		return nil, errors.Wrap(err, "database open error")
+	}
+	return db, nil
+}
+
+var ProviderSet = wire.NewSet(NewSqlDb, NewGormDb, NewOptions)

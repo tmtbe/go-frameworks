@@ -7,8 +7,6 @@ import (
 	migrate "github.com/rubenv/sql-migrate"
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
 	"test/internal/pkg/database"
 )
 
@@ -25,8 +23,12 @@ func NewOptions(v *viper.Viper) (*MigrationOptions, error) {
 	return o, err
 }
 
-func Migrate(v *viper.Viper, o *database.Options, mo *MigrationOptions, sqlDb *sql.DB, logger *zap.Logger) (*gorm.DB, error) {
-	if !o.Enable {
+type Init struct {
+}
+
+func NewInit(v *viper.Viper, o *database.Options, mo *MigrationOptions, sqlDb *sql.DB, logger *zap.Logger) (*Init, error) {
+	if sqlDb == nil {
+		logger.Warn("sql db is nil, migrate is skips")
 		return nil, nil
 	}
 	m := &migrate.FileMigrationSource{
@@ -37,13 +39,7 @@ func Migrate(v *viper.Viper, o *database.Options, mo *MigrationOptions, sqlDb *s
 		return nil, errors.Wrap(err, "applying migrations failed")
 	}
 	logger.Info("migrations applied", zap.Int("count", n))
-	db, err := gorm.Open(postgres.New(postgres.Config{
-		Conn: sqlDb,
-	}), &gorm.Config{})
-	if err != nil {
-		return nil, errors.Wrap(err, "database open error")
-	}
-	return db, nil
+	return &Init{}, nil
 }
 
-var ProviderSet = wire.NewSet(Migrate, NewOptions)
+var ProviderSet = wire.NewSet(NewOptions, NewInit)

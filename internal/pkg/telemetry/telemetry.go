@@ -28,7 +28,6 @@ type Options struct {
 func NewOptions(v *viper.Viper, logger *zap.Logger) (*Options, error) {
 	var err error
 	o := new(Options)
-	v.SetDefault("telemetry.insecure", true)
 	if err = v.UnmarshalKey("telemetry", o); err != nil {
 		return nil, errors.Wrap(err, "unmarshal telemetry option error")
 	}
@@ -36,15 +35,11 @@ func NewOptions(v *viper.Viper, logger *zap.Logger) (*Options, error) {
 	return o, err
 }
 
-type Middleware struct {
-	ServiceName string
+type Init struct {
 }
 
-func (m *Middleware) GetMiddleware() gin.HandlerFunc {
-	return otelgin.Middleware(m.ServiceName)
-}
-
-func NewTracerMiddleware(ctx context.Context, o *Options, logger *zap.Logger) (*Middleware, func()) {
+func NewInit(ctx context.Context, o *Options, logger *zap.Logger, engine *gin.Engine) (*Init, func()) {
+	engine.Use(otelgin.Middleware(o.ServiceName))
 	secureOption := otlptracegrpc.WithTLSCredentials(credentials.NewClientTLSFromCert(nil, ""))
 	if o.Insecure {
 		secureOption = otlptracegrpc.WithInsecure()
@@ -83,11 +78,9 @@ func NewTracerMiddleware(ctx context.Context, o *Options, logger *zap.Logger) (*
 			sdktrace.WithResource(resources),
 		),
 	)
-	return &Middleware{
-			ServiceName: o.ServiceName,
-		}, func() {
-			exporter.Shutdown(ctx)
-		}
+	return &Init{}, func() {
+		exporter.Shutdown(ctx)
+	}
 }
 
-var ProviderSet = wire.NewSet(NewTracerMiddleware, NewOptions)
+var ProviderSet = wire.NewSet(NewInit, NewOptions)
