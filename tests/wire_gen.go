@@ -18,12 +18,12 @@ import (
 	"test/internal/pkg/database"
 	"test/internal/pkg/log"
 	"test/internal/pkg/migrate"
-	"test/internal/pkg/transports/http"
 	"test/tests/pkg"
 	"test/tests/pkg/context"
 	database2 "test/tests/pkg/database"
 	"test/tests/pkg/redis"
 	"test/tests/pkg/testcontainer"
+	"test/tests/pkg/transports/http"
 )
 
 import (
@@ -62,11 +62,7 @@ func CreateBackground(cf string) (*testcontainer.Background, func(), error) {
 	if err != nil {
 		return nil, nil, err
 	}
-	httpOptions, err := http.NewOptions(viper)
-	if err != nil {
-		return nil, nil, err
-	}
-	engine := http.NewGin(httpOptions, logger)
+	engine := http.NewTestGin(logger)
 	gormDB, err := database.NewGormDb(db, logger)
 	if err != nil {
 		return nil, nil, err
@@ -106,6 +102,33 @@ func CreateBackground(cf string) (*testcontainer.Background, func(), error) {
 	}
 	return background, func() {
 	}, nil
+}
+
+func CreateUserDetailAPI(cf string, s services.UserDetailService) (*apis.UserDetailAPI, error) {
+	viper, err := config.New(cf)
+	if err != nil {
+		return nil, err
+	}
+	options, err := log.NewOptions(viper)
+	if err != nil {
+		return nil, err
+	}
+	logger, err := log.New(options)
+	if err != nil {
+		return nil, err
+	}
+	engine := http.NewTestGin(logger)
+	memoryStore := cachestore.NewMemoryCache()
+	testMockAPIInfraContext := &context.TestMockAPIInfraContext{
+		Config:     viper,
+		Log:        logger,
+		Route:      engine,
+		CacheStore: memoryStore,
+	}
+	api := apis.NewAPI(logger, testMockAPIInfraContext)
+	userDetailApplication := application.NewUserDetailsApplication(logger, s)
+	userDetailAPI := apis.NewUserDetailAPI(api, userDetailApplication)
+	return userDetailAPI, nil
 }
 
 // wire.go:

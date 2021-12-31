@@ -13,9 +13,9 @@ import (
 	context2 "test/internal/pkg/context"
 	"test/internal/pkg/log"
 	"test/internal/pkg/migrate"
-	"test/internal/pkg/transports/http"
 	"test/tests/pkg/database"
 	"test/tests/pkg/redis"
+	"test/tests/pkg/transports/http"
 )
 
 func NewContext() context.Context {
@@ -67,4 +67,43 @@ var ProviderSet = wire.NewSet(
 	migrate.ProviderSet,
 	http.ProviderSet,
 	cachestore.ProviderSetRedis,
+)
+
+type TestMockAPIInfraContext struct {
+	Config     *viper.Viper
+	Log        *zap.Logger
+	Route      *gin.Engine
+	CacheStore cachestore.Store
+}
+
+func (a *TestMockAPIInfraContext) GetConfig() *viper.Viper {
+	return a.Config
+}
+func (a *TestMockAPIInfraContext) GetLog() *zap.Logger {
+	return a.Log
+}
+func (a *TestMockAPIInfraContext) GetRoute() *gin.Engine {
+	return a.Route
+}
+func (a *TestMockAPIInfraContext) GetGormDB() *gorm.DB {
+	return nil
+}
+func (a *TestMockAPIInfraContext) GetDB() *sql.DB {
+	return nil
+}
+func (a *TestMockAPIInfraContext) GetCacheStore() cachestore.Store {
+	return a.CacheStore
+}
+func (a *TestMockAPIInfraContext) GetContext() context.Context {
+	return nil
+}
+
+var APIMockProviderSet = wire.NewSet(
+	NewContext,
+	wire.Struct(new(TestMockAPIInfraContext), "*"),
+	wire.Bind(new(context2.InfraContext), new(*TestMockAPIInfraContext)),
+	log.ProviderSet,
+	config.ProviderSet,
+	http.ProviderSet,
+	cachestore.ProviderSetMemory,
 )

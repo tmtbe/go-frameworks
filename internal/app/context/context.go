@@ -24,19 +24,31 @@ type AppContext struct {
 
 var ProviderSet = wire.NewSet(
 	wire.Struct(new(AppContext), "*"),
-
 	// API
+	APIProviderSet,
+	// Application
+	ApplicationProviderSet,
+	// Service
+	ServiceProviderSet,
+	// Repo
+	RepoProviderSet,
+)
+
+var APIProviderSet = wire.NewSet(
 	apis.NewAPI,
 	apis.NewUserDetailAPI,
+)
 
-	// Application
+var ApplicationProviderSet = wire.NewSet(
 	application.NewUserDetailsApplication,
+)
 
-	// Service
+var ServiceProviderSet = wire.NewSet(
 	services.NewUserDetailServiceImpl,
 	wire.Bind(new(services.UserDetailService), new(*services.UserDetailServiceImpl)),
+)
 
-	// Repo
+var RepoProviderSet = wire.NewSet(
 	repos.NewPostgresDetailsRepository,
 	repos.NewPostgresUserRepository,
 	wire.Bind(new(repos.UserRepository), new(*repos.PostgresUserRepository)),

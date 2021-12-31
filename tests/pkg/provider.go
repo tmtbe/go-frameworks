@@ -10,3 +10,6 @@ var ProviderSet = wire.NewSet(
 	context.ProviderSet,
 	testcontainer.ProviderSet,
 )
+var APIMockProviderSet = wire.NewSet(
+	context.APIMockProviderSet,
+)

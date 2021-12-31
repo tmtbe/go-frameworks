@@ -14,6 +14,10 @@ type API struct {
 	ctx    context.InfraContext
 }
 
+func (a *API) GetInfraContext() context.InfraContext {
+	return a.ctx
+}
+
 func NewAPI(logger *zap.Logger, ctx context.InfraContext) *API {
 	return &API{
 		logger: logger,

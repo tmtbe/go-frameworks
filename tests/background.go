@@ -3,6 +3,10 @@ package tests
 import (
 	"flag"
 	_ "github.com/lib/pq"
+	"io"
+	"net/http"
+	"net/http/httptest"
+	"test/internal/app/module1/interfaces/apis"
 	"test/tests/pkg/testcontainer"
 )
 
@@ -16,4 +20,15 @@ func setUp() *testcontainer.Background {
 		panic(err)
 	}
 	return background
+}
+
+func callAPI(api apis.API, method, url string, body io.Reader) *http.Response {
+	w := httptest.NewRecorder()
+	r, _ := http.NewRequest(method, url, body)
+	api.GetInfraContext().GetRoute().ServeHTTP(w, r)
+	return w.Result()
+}
+
+func NewMockAPI() *apis.API {
+	return &apis.API{}
 }

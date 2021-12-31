@@ -17,6 +17,7 @@ require (
 	github.com/spf13/viper v1.10.1
 	github.com/stretchr/testify v1.7.0
 	github.com/testcontainers/testcontainers-go v0.12.0
+	github.com/vektra/mockery/v2 v2.9.4 // indirect
 	github.com/ziutek/mymysql v1.5.4 // indirect
 	go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin v0.28.0 // indirect
 	go.opentelemetry.io/otel v1.3.0 // indirect
