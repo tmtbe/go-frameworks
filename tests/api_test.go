@@ -5,7 +5,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"test/internal/app/module1/application/services"
-	"test/mocks"
+	"test/tests/mocks"
 	"testing"
 )
 
