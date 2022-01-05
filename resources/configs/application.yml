@@ -2,14 +2,15 @@ app:
   name: test
 http:
   mode: release
+  host: localhost
   port: 8081
 db:
-  enable: true
+  enable: false
   url: "postgres://root:root@localhost:5432/test?sslmode=disable"
   migrations:
     dir: "/resources/db/migrations"
 redis:
-  enable: true
+  enable: false
   network: "tcp"
   url: "localhost:6379"
 log:
