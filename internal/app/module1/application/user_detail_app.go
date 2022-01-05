@@ -2,15 +2,15 @@ package application
 
 import (
 	"go.uber.org/zap"
-	"test/internal/app/module1/domain/expose"
+	"test/internal/app/module1/application/services"
 )
 
 type UserDetailApplication struct {
 	logger  *zap.Logger
-	service expose.UserDetailService
+	service services.UserDetailService
 }
 
-func NewUserDetailsApplication(logger *zap.Logger, s expose.UserDetailService) *UserDetailApplication {
+func NewUserDetailsApplication(logger *zap.Logger, s services.UserDetailService) *UserDetailApplication {
 	u := &UserDetailApplication{
 		logger:  logger,
 		service: s,
@@ -18,6 +18,6 @@ func NewUserDetailsApplication(logger *zap.Logger, s expose.UserDetailService) *
 	return u
 }
 
-func (da *UserDetailApplication) GetUserDetail(id uint64) (*expose.UserDetail, error) {
+func (da *UserDetailApplication) GetUserDetail(id uint64) (*services.UserDetail, error) {
 	return da.service.GetUserDetail(id)
 }

@@ -4,7 +4,7 @@ import (
 	"flag"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	"test/internal/app/module1/domain/expose"
+	"test/internal/app/module1/application/services"
 	"test/tests/mocks"
 	"testing"
 )
@@ -12,7 +12,7 @@ import (
 func TestUserDetailApi(t *testing.T) {
 	flag.Parse()
 	us := new(mocks.UserDetailService)
-	us.On("GetUserDetail", mock.AnythingOfType("uint64")).Return(&expose.UserDetail{}, nil)
+	us.On("GetUserDetail", mock.AnythingOfType("uint64")).Return(&services.UserDetail{}, nil)
 	api, err := CreateUserDetailAPI(*resourcesPath, us)
 	if err != nil {
 		t.Fatalf("get userDetail api  error,%+v", err)

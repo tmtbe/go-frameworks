@@ -7,21 +7,27 @@ dependenciesRules:
   - package: "**.application.**"
     shouldOnlyDependsOn:
       - "**.application.**"
-      - "**.domain.expose.**"
+      - "**.domain.**"
       - "**.pkg.**"
   - package: "**.domain.**"
     shouldOnlyDependsOn:
+      - "**.application.services.**"
       - "**.domain.**"
-      - "**.infrastructure.expose.**"
       - "**.pkg.**"
   - package: "**.infrastructure.**"
     shouldOnlyDependsOn:
+      - "**.domain.clients.**"
+      - "**.domain.repos.**"
       - "**.infrastructure.**"
       - "**.pkg.**"
-  - package: "**.expose.**"
-    shouldOnlyDependsOn:
-      - "**.expose.**"
+
 contentsRules:
-  - package: "**.expose"
+  - package: "**.application.services"
+    shouldNotContainMethods: true
+    shouldNotContainFunctions: true
+  - package: "**.domain.clients"
+    shouldNotContainMethods: true
+    shouldNotContainFunctions: true
+  - package: "**.domain.repos"
     shouldNotContainMethods: true
     shouldNotContainFunctions: true

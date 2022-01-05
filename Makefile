@@ -23,7 +23,7 @@ mock: clean
 arch:
 	arch-go -v
 .PHONY: test
-test: mock arch
+test: arch mock
 	go run github.com/google/wire/cmd/wire ./tests
 	go test -v  ./internal/app/... -f `pwd` -covermode=count -coverprofile=dist/cover.out
 	go test -v  ./tests/... -f `pwd` -covermode=count -coverprofile=dist/cover.out

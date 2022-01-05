@@ -2,21 +2,21 @@ package services
 
 import (
 	"go.uber.org/zap"
-	expose2 "test/internal/app/module1/domain/expose"
-	"test/internal/app/module1/infrastructure/expose"
+	expose2 "test/internal/app/module1/application/services"
+	"test/internal/app/module1/domain/repos"
 	"test/internal/pkg/app"
 )
 
 type UserDetailServiceImpl struct {
 	logger           *zap.Logger
-	detailRepository expose.DetailRepository
-	userRepository   expose.UserRepository
+	detailRepository repos.DetailRepository
+	userRepository   repos.UserRepository
 }
 
 func NewUserDetailServiceImpl(
 	logger *zap.Logger,
-	detailRepository expose.DetailRepository,
-	userRepository expose.UserRepository,
+	detailRepository repos.DetailRepository,
+	userRepository repos.UserRepository,
 ) *UserDetailServiceImpl {
 	u := &UserDetailServiceImpl{
 		logger:           logger.With(zap.String("type", "UserDetailServiceImpl")),
@@ -37,8 +37,8 @@ func (s *UserDetailServiceImpl) GetUserDetail(ID uint64) (p *expose2.UserDetail,
 }
 
 func fromInfraDetailAndUser(
-	detail *expose.DetailRecord,
-	user *expose.UserRecord,
+	detail *repos.DetailRecord,
+	user *repos.UserRecord,
 ) *expose2.UserDetail {
 	if detail == nil {
 		return nil
