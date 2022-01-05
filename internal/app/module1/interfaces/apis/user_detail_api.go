@@ -4,7 +4,7 @@ import (
 	cache "github.com/chenyahui/gin-cache"
 	"github.com/gin-gonic/gin"
 	"test/internal/app/module1/application"
-	"test/internal/app/module1/interfaces/exceptions"
+	"test/internal/pkg/app"
 	"time"
 )
 
@@ -32,7 +32,7 @@ func (dc *UserDetailAPI) GetUserDetail(c *gin.Context) (interface{}, error) {
 	}{}
 	err := c.ShouldBindQuery(&param)
 	if err != nil {
-		return nil, exceptions.ParameterError(err.Error())
+		return nil, app.ParameterError(err.Error())
 	}
 	p, err := dc.application.GetUserDetail(param.ID)
 	if err != nil {

@@ -1,0 +1,27 @@
+dependenciesRules:
+  - package: "**.interfaces.**"
+    shouldOnlyDependsOn:
+      - "**.interfaces.**"
+      - "**.application.**"
+      - "**.pkg.**"
+  - package: "**.application.**"
+    shouldOnlyDependsOn:
+      - "**.application.**"
+      - "**.domain.expose.**"
+      - "**.pkg.**"
+  - package: "**.domain.**"
+    shouldOnlyDependsOn:
+      - "**.domain.**"
+      - "**.infrastructure.expose.**"
+      - "**.pkg.**"
+  - package: "**.infrastructure.**"
+    shouldOnlyDependsOn:
+      - "**.infrastructure.**"
+      - "**.pkg.**"
+  - package: "**.expose.**"
+    shouldOnlyDependsOn:
+      - "**.expose.**"
+contentsRules:
+  - package: "**.expose"
+    shouldNotContainMethods: true
+    shouldNotContainFunctions: true

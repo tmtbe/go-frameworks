@@ -4,7 +4,7 @@ import (
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
-	"test/internal/app/module1/domain/repos"
+	"test/internal/app/module1/infrastructure/expose"
 )
 
 type PostgresDetailRepository struct {
@@ -12,8 +12,8 @@ type PostgresDetailRepository struct {
 	db     *gorm.DB
 }
 
-func (p *PostgresDetailRepository) FindDetailById(ID uint64) *repos.DetailRecord {
-	var detail repos.DetailRecord
+func (p *PostgresDetailRepository) FindDetailById(ID uint64) *expose.DetailRecord {
+	var detail expose.DetailRecord
 	result := p.db.First(&detail, ID)
 	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 		return nil

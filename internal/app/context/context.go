@@ -3,9 +3,9 @@ package context
 import (
 	"github.com/google/wire"
 	"test/internal/app/module1/application"
-	services2 "test/internal/app/module1/application/services"
-	repos2 "test/internal/app/module1/domain/repos"
+	services2 "test/internal/app/module1/domain/expose"
 	"test/internal/app/module1/domain/services"
+	repos2 "test/internal/app/module1/infrastructure/expose"
 	"test/internal/app/module1/infrastructure/repos"
 	"test/internal/app/module1/interfaces/apis"
 	"test/internal/pkg/context"
