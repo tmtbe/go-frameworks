@@ -1,7 +1,7 @@
 package services
 
 import (
-	"test/internal/app/module1/infrastructure/repos"
+	"test/internal/app/module1/domain/repos"
 	"time"
 )
 

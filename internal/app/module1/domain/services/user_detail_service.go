@@ -3,7 +3,7 @@ package services
 import (
 	"go.uber.org/zap"
 	"test/internal/app/module1/domain/exceptions"
-	"test/internal/app/module1/infrastructure/repos"
+	"test/internal/app/module1/domain/repos"
 )
 
 type UserDetailServiceImpl struct {

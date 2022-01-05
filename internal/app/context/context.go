@@ -3,6 +3,7 @@ package context
 import (
 	"github.com/google/wire"
 	"test/internal/app/module1/application"
+	repos2 "test/internal/app/module1/domain/repos"
 	"test/internal/app/module1/domain/services"
 	"test/internal/app/module1/infrastructure/repos"
 	"test/internal/app/module1/interfaces/apis"
@@ -16,8 +17,8 @@ type AppContext struct {
 
 	*application.UserDetailApplication
 
-	repos.UserRepository
-	repos.DetailRepository
+	repos2.UserRepository
+	repos2.DetailRepository
 
 	services.UserDetailService
 }
@@ -51,6 +52,6 @@ var ServiceProviderSet = wire.NewSet(
 var RepoProviderSet = wire.NewSet(
 	repos.NewPostgresDetailsRepository,
 	repos.NewPostgresUserRepository,
-	wire.Bind(new(repos.UserRepository), new(*repos.PostgresUserRepository)),
-	wire.Bind(new(repos.DetailRepository), new(*repos.PostgresDetailRepository)),
+	wire.Bind(new(repos2.UserRepository), new(*repos.PostgresUserRepository)),
+	wire.Bind(new(repos2.DetailRepository), new(*repos.PostgresDetailRepository)),
 )
