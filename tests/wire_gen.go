@@ -10,6 +10,7 @@ import (
 	"test/internal/app"
 	context2 "test/internal/app/context"
 	"test/internal/app/module1/application"
+	services2 "test/internal/app/module1/application/services"
 	"test/internal/app/module1/domain/services"
 	"test/internal/app/module1/infrastructure/repos"
 	"test/internal/app/module1/interfaces/apis"
@@ -104,7 +105,7 @@ func CreateBackground(cf string) (*testcontainer.Background, func(), error) {
 	}, nil
 }
 
-func CreateUserDetailAPI(cf string, s services.UserDetailService) (*apis.UserDetailAPI, error) {
+func CreateUserDetailAPI(cf string, s services2.UserDetailService) (*apis.UserDetailAPI, error) {
 	viper, err := config.New(cf)
 	if err != nil {
 		return nil, err

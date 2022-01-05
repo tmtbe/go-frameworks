@@ -2,6 +2,7 @@ package services
 
 import (
 	"go.uber.org/zap"
+	"test/internal/app/module1/application/services"
 	"test/internal/app/module1/domain/exceptions"
 	"test/internal/app/module1/domain/repos"
 )
@@ -25,10 +26,10 @@ func NewUserDetailServiceImpl(
 	return u
 }
 
-func (s *UserDetailServiceImpl) GetUserDetail(ID uint64) (p *UserDetail, err error) {
+func (s *UserDetailServiceImpl) GetUserDetail(ID uint64) (p *services.UserDetail, err error) {
 	d := s.detailRepository.FindDetailById(ID)
 	u := s.userRepository.FindUserById(ID)
-	p = FromInfraDetailAndUser(d, u)
+	p = services.FromInfraDetailAndUser(d, u)
 	if p == nil {
 		err = exceptions.BusinessError("Can't find any user or detail")
 	}

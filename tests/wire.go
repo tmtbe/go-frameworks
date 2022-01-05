@@ -7,7 +7,7 @@ import (
 	"github.com/google/wire"
 	"test/internal/app"
 	"test/internal/app/context"
-	"test/internal/app/module1/domain/services"
+	"test/internal/app/module1/application/services"
 	"test/internal/app/module1/interfaces/apis"
 	"test/tests/pkg"
 	"test/tests/pkg/testcontainer"
