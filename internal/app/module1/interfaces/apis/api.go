@@ -37,14 +37,6 @@ func wrapper(handler HandlerFunc) func(c *gin.Context) {
 			var apiException *app.Exception
 			if h, ok := err.(*app.Exception); ok {
 				apiException = h
-			} else if e, ok := err.(error); ok {
-				if gin.Mode() == "debug" {
-					// 错误
-					apiException = app.UnknownError(e.Error())
-				} else {
-					// 未知错误
-					apiException = app.UnknownError(e.Error())
-				}
 			} else {
 				apiException = app.ServerError()
 			}

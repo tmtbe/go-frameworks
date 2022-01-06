@@ -83,7 +83,10 @@ func NewInit(ctx context.Context, o *Options, logger *zap.Logger, engine *gin.En
 		),
 	)
 	return &Init{}, func() {
-		exporter.Shutdown(ctx)
+		err := exporter.Shutdown(ctx)
+		if err != nil {
+			return
+		}
 	}
 }
 

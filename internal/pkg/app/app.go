@@ -57,14 +57,13 @@ func (a *Application) AwaitSignal() {
 	c := make(chan os.Signal, 1)
 	signal.Reset(syscall.SIGTERM, syscall.SIGINT)
 	signal.Notify(c, syscall.SIGTERM, syscall.SIGINT)
-	select {
-	case s := <-c:
-		a.logger.Info("receive a signal", zap.String("signal", s.String()))
-		if a.httpServer != nil {
-			if err := a.httpServer.Stop(); err != nil {
-				a.logger.Warn("stop http server error", zap.Error(err))
-			}
+	s := <-c
+	a.logger.Info("receive a signal", zap.String("signal", s.String()))
+	if a.httpServer != nil {
+		if err := a.httpServer.Stop(); err != nil {
+			a.logger.Warn("stop http server error", zap.Error(err))
 		}
-		os.Exit(0)
 	}
+	os.Exit(0)
+
 }

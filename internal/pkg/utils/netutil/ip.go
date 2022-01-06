@@ -8,7 +8,10 @@ import (
 // GetLocalIP4 gets local ip address.
 func GetLocalIP4() (ip string) {
 	interfaces, err := net.Interfaces()
-	net.InterfaceAddrs()
+	if err != nil {
+		return
+	}
+	_, err = net.InterfaceAddrs()
 	if err != nil {
 		return
 	}
