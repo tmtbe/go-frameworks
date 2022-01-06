@@ -1,5 +1,12 @@
 apps = 'app'
-
+.PHONY: install
+install:
+	go get github.com/vektra/mockery/v2/.../
+	go get github.com/fdaines/arch-go
+	go get github.com/go-courier/husky/cmd/husky
+	go get github.com/golangci/golangci-lint/cmd/golangci-lint
+	go mod tidy
+	husky init
 .PHONY: run
 run: wire
 	go run ./cmd -f .
@@ -19,11 +26,12 @@ clean:
 .PHONY: mock
 mock: clean
 	mockery --all --output ./tests/mocks
-.PHONY: arch
-arch:
+.PHONY: check
+check:
+	golangci-lint run
 	arch-go -v
 .PHONY: test
-test: arch mock
+test: check mock
 	go run github.com/google/wire/cmd/wire ./tests
 	go test -v  ./internal/app/... -f `pwd` -covermode=count -coverprofile=dist/cover.out
 	go test -v  ./tests/... -f `pwd` -covermode=count -coverprofile=dist/cover.out
