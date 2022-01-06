@@ -2,7 +2,6 @@ package services
 
 import (
 	"go.uber.org/zap"
-	expose2 "test/internal/app/module1/application/services"
 	"test/internal/app/module1/domain/repos"
 	"test/internal/pkg/app"
 )
@@ -26,7 +25,7 @@ func NewUserDetailServiceImpl(
 	return u
 }
 
-func (s *UserDetailServiceImpl) GetUserDetail(ID uint64) (p *expose2.UserDetail, err error) {
+func (s *UserDetailServiceImpl) GetUserDetail(ID uint64) (p *UserDetail, err error) {
 	d := s.detailRepository.FindDetailById(ID)
 	u := s.userRepository.FindUserById(ID)
 	p = fromInfraDetailAndUser(d, u)
@@ -39,14 +38,14 @@ func (s *UserDetailServiceImpl) GetUserDetail(ID uint64) (p *expose2.UserDetail,
 func fromInfraDetailAndUser(
 	detail *repos.DetailRecord,
 	user *repos.UserRecord,
-) *expose2.UserDetail {
+) *UserDetail {
 	if detail == nil {
 		return nil
 	}
 	if user == nil {
 		return nil
 	}
-	return &expose2.UserDetail{
+	return &UserDetail{
 		ID:          detail.ID,
 		UserName:    user.UserName,
 		Password:    user.Password,

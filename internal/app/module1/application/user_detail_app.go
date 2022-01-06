@@ -2,7 +2,7 @@ package application
 
 import (
 	"go.uber.org/zap"
-	"test/internal/app/module1/application/services"
+	"test/internal/app/module1/domain/services"
 )
 
 type UserDetailApplication struct {

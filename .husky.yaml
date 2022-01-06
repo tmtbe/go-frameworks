@@ -1,8 +1,9 @@
 hooks:
   # hook scripts
   pre-commit:
-    - golangci-lint run
-    - husky lint-staged
+    - make check
+  pre-push:
+    - make onlyTest
   commit-msg:
     - husky lint-commit
 

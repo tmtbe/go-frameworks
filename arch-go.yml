@@ -11,7 +11,6 @@ dependenciesRules:
       - "**.pkg.**"
   - package: "**.domain.**"
     shouldOnlyDependsOn:
-      - "**.application.services.**"
       - "**.domain.**"
       - "**.pkg.**"
   - package: "**.infrastructure.**"

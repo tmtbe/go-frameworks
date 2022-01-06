@@ -6,6 +6,7 @@ install:
 	go get github.com/go-courier/husky/cmd/husky
 	go get github.com/golangci/golangci-lint/cmd/golangci-lint
 	go mod tidy
+	go get github.com/google/wire/cmd/wire
 	husky init
 .PHONY: run
 run: wire
@@ -29,9 +30,11 @@ mock: clean
 .PHONY: check
 check:
 	golangci-lint run
-	arch-go -v
-.PHONY: test
-test: check mock
+	arch-go
+.PHONY: onlyTest
+onlyTest:
 	go run github.com/google/wire/cmd/wire ./tests
 	go test -v  ./internal/app/... -f `pwd` -covermode=count -coverprofile=dist/cover.out
 	go test -v  ./tests/... -f `pwd` -covermode=count -coverprofile=dist/cover.out
+.PHONY: test
+test: check mock onlyTest

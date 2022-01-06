@@ -3,7 +3,6 @@ package context
 import (
 	"github.com/google/wire"
 	"test/internal/app/module1/application"
-	servicesDef "test/internal/app/module1/application/services"
 	reposDef "test/internal/app/module1/domain/repos"
 	"test/internal/app/module1/domain/services"
 	"test/internal/app/module1/infrastructure/repos"
@@ -21,7 +20,7 @@ type AppContext struct {
 	reposDef.UserRepository
 	reposDef.DetailRepository
 
-	servicesDef.UserDetailService
+	services.UserDetailService
 }
 
 var ProviderSet = wire.NewSet(
@@ -47,7 +46,7 @@ var ApplicationProviderSet = wire.NewSet(
 
 var ServiceProviderSet = wire.NewSet(
 	services.NewUserDetailServiceImpl,
-	wire.Bind(new(servicesDef.UserDetailService), new(*services.UserDetailServiceImpl)),
+	wire.Bind(new(services.UserDetailService), new(*services.UserDetailServiceImpl)),
 )
 
 var RepoProviderSet = wire.NewSet(
