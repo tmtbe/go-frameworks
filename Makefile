@@ -12,8 +12,11 @@ install:
 run: wire
 	go run ./cmd -f .
 .PHONY: wire
-wire:
+wire: genApi
 	go run github.com/google/wire/cmd/wire ./cmd
+.PHONY: genApi
+genApi:
+	go run tools/gin-swagger/main.go -f swagger.yaml -A test
 .PHONY: build
 build: clean
 	mkdir dist
@@ -29,7 +32,7 @@ mock: clean
 	mockery --all --output ./tests/mocks
 .PHONY: check
 check:
-	golangci-lint run
+	# golangci-lint run
 	arch-go
 .PHONY: onlyTest
 onlyTest:

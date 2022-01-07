@@ -13,6 +13,7 @@ import (
 	"test/internal/app/module1/domain/services"
 	"test/internal/app/module1/infrastructure/repos"
 	"test/internal/app/module1/interfaces/apis"
+	"test/internal/gen/restapi"
 	"test/internal/pkg"
 	"test/internal/pkg/app"
 	"test/internal/pkg/cachestore"
@@ -23,7 +24,7 @@ import (
 	"test/internal/pkg/migrate"
 	"test/internal/pkg/redis"
 	"test/internal/pkg/telemetry"
-	"test/internal/pkg/transports/http"
+	"test/internal/pkg/transports"
 )
 
 import (
@@ -49,6 +50,16 @@ func CreateApp(cf string) (*app.Application, func(), error) {
 	if err != nil {
 		return nil, nil, err
 	}
+	httpOptions, err := transports.NewOptions(viper)
+	if err != nil {
+		return nil, nil, err
+	}
+	engine := transports.NewGin(httpOptions, logger)
+	healthyApplicationImpl := application.NewHealthyApplicationImpl()
+	petApplicationImpl := application.NewPetApplicationImpl()
+	storeApplication := application.NewStoreApplication()
+	userApplicationImpl := application.NewUserApplicationImpl()
+	routes := restapi.NewRoutes(engine, healthyApplicationImpl, petApplicationImpl, storeApplication, userApplicationImpl)
 	databaseOptions, err := database.NewOptions(viper, logger)
 	if err != nil {
 		return nil, nil, err
@@ -70,11 +81,6 @@ func CreateApp(cf string) (*app.Application, func(), error) {
 	if err != nil {
 		return nil, nil, err
 	}
-	httpOptions, err := http.NewOptions(viper)
-	if err != nil {
-		return nil, nil, err
-	}
-	engine := http.NewGin(httpOptions, logger)
 	telemetryInit, cleanup := telemetry.NewInit(contextContext, telemetryOptions, logger, engine)
 	gormDB, err := database.NewGormDb(db, logger)
 	if err != nil {
@@ -110,6 +116,7 @@ func CreateApp(cf string) (*app.Application, func(), error) {
 	userDetailApplication := application.NewUserDetailsApplication(logger, userDetailServiceImpl)
 	userDetailAPI := apis.NewUserDetailAPI(api, userDetailApplication)
 	appContext := &context2.AppContext{
+		Routes:                routes,
 		InfraContext:          appInfraContext,
 		UserDetailAPI:         userDetailAPI,
 		UserDetailApplication: userDetailApplication,
@@ -117,7 +124,7 @@ func CreateApp(cf string) (*app.Application, func(), error) {
 		DetailRepository:      postgresDetailRepository,
 		UserDetailService:     userDetailServiceImpl,
 	}
-	server, cleanup2, err := http.NewServer(httpOptions, logger, engine)
+	server, cleanup2, err := transports.NewServer(httpOptions, logger, engine)
 	if err != nil {
 		cleanup()
 		return nil, nil, err

@@ -7,19 +7,19 @@ import (
 	"os/signal"
 	"syscall"
 	"test/internal/pkg/context"
-	"test/internal/pkg/transports/http"
+	"test/internal/pkg/transports"
 )
 
 type Application struct {
 	name       string
 	logger     *zap.Logger
-	httpServer *http.Server
+	httpServer *transports.Server
 	context    context.InfraContext
 }
 
 type Option func(app *Application) error
 
-func HttpServerOption(svr *http.Server) Option {
+func HttpServerOption(svr *transports.Server) Option {
 	return func(app *Application) error {
 		svr.Application(app.name)
 		app.httpServer = svr

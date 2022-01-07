@@ -15,7 +15,7 @@ import (
 	"test/internal/pkg/migrate"
 	"test/internal/pkg/redis"
 	"test/internal/pkg/telemetry"
-	"test/internal/pkg/transports/http"
+	"test/internal/pkg/transports"
 )
 
 func NewContext() context.Context {
@@ -76,7 +76,7 @@ var ProviderSet = wire.NewSet(
 	database.ProviderSet,
 	redis.ProviderSet,
 	migrate.ProviderSet,
-	http.ProviderSet,
+	transports.ProviderSet,
 	cachestore.ProviderSetRedis,
 	telemetry.ProviderSet,
 )

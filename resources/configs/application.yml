@@ -4,6 +4,9 @@ http:
   mode: release
   host: localhost
   port: 8081
+swagger:
+  enable: true
+  url: swagger.json
 db:
   enable: false
   url: "postgres://root:root@localhost:5432/test?sslmode=disable"
@@ -21,7 +24,7 @@ log:
   level: "debug"
   stdout: true
 telemetry:
-  enable: true
+  enable: false
   serviceName: test
   endpoint: "localhost:4317"
   insecure: true
