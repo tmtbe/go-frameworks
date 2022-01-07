@@ -8,76 +8,21 @@ package restapi
 import (
 	"net/http"
 	"strings"
+
+	"test/internal/gen/restapi/operations/user"
+	"test/internal/pkg/app"
 	"test/internal/pkg/transports/middleware"
 
 	"github.com/gin-gonic/gin"
-	"test/internal/gen/restapi/operations/pet"
-	"test/internal/gen/restapi/operations/store"
-	"test/internal/gen/restapi/operations/user"
-	"test/internal/pkg/app"
 )
 
 // Routes defines all the routes of the Server service.
 type Routes struct {
 	*gin.Engine
-	AddPet struct {
+	GetUsersUserID struct {
 		*gin.RouterGroup
 	}
-	CreateUser struct {
-		*gin.RouterGroup
-	}
-	CreateUsersWithArrayInput struct {
-		*gin.RouterGroup
-	}
-	CreateUsersWithListInput struct {
-		*gin.RouterGroup
-	}
-	DeleteOrder struct {
-		*gin.RouterGroup
-	}
-	DeletePet struct {
-		*gin.RouterGroup
-	}
-	DeleteUser struct {
-		*gin.RouterGroup
-	}
-	FindPetsByStatus struct {
-		*gin.RouterGroup
-	}
-	FindPetsByTags struct {
-		*gin.RouterGroup
-	}
-	GetInventory struct {
-		*gin.RouterGroup
-	}
-	GetOrderByID struct {
-		*gin.RouterGroup
-	}
-	GetPetByID struct {
-		*gin.RouterGroup
-	}
-	GetUserByName struct {
-		*gin.RouterGroup
-	}
-	LoginUser struct {
-		*gin.RouterGroup
-	}
-	LogoutUser struct {
-		*gin.RouterGroup
-	}
-	PlaceOrder struct {
-		*gin.RouterGroup
-	}
-	UpdatePet struct {
-		*gin.RouterGroup
-	}
-	UpdatePetWithForm struct {
-		*gin.RouterGroup
-	}
-	UpdateUser struct {
-		*gin.RouterGroup
-	}
-	UploadFile struct {
+	PostUser struct {
 		*gin.RouterGroup
 	}
 }
@@ -107,33 +52,9 @@ type HealthyApplication interface {
 	Healthy() bool
 }
 
-type PetApplication interface {
-	AddPet(ctx *gin.Context, params *pet.AddPetParams) *app.Response
-	DeletePet(ctx *gin.Context, params *pet.DeletePetParams) *app.Response
-	FindPetsByStatus(ctx *gin.Context, params *pet.FindPetsByStatusParams) *app.Response
-	FindPetsByTags(ctx *gin.Context, params *pet.FindPetsByTagsParams) *app.Response
-	GetPetByID(ctx *gin.Context, params *pet.GetPetByIDParams) *app.Response
-	UpdatePet(ctx *gin.Context, params *pet.UpdatePetParams) *app.Response
-	UpdatePetWithForm(ctx *gin.Context, params *pet.UpdatePetWithFormParams) *app.Response
-	UploadFile(ctx *gin.Context, params *pet.UploadFileParams) *app.Response
-}
-
-type StoreApplication interface {
-	DeleteOrder(ctx *gin.Context, params *store.DeleteOrderParams) *app.Response
-	GetInventory(ctx *gin.Context) *app.Response
-	GetOrderByID(ctx *gin.Context, params *store.GetOrderByIDParams) *app.Response
-	PlaceOrder(ctx *gin.Context, params *store.PlaceOrderParams) *app.Response
-}
-
 type UserApplication interface {
-	CreateUser(ctx *gin.Context, params *user.CreateUserParams) *app.Response
-	CreateUsersWithArrayInput(ctx *gin.Context, params *user.CreateUsersWithArrayInputParams) *app.Response
-	CreateUsersWithListInput(ctx *gin.Context, params *user.CreateUsersWithListInputParams) *app.Response
-	DeleteUser(ctx *gin.Context, params *user.DeleteUserParams) *app.Response
-	GetUserByName(ctx *gin.Context, params *user.GetUserByNameParams) *app.Response
-	LoginUser(ctx *gin.Context, params *user.LoginUserParams) *app.Response
-	LogoutUser(ctx *gin.Context) *app.Response
-	UpdateUser(ctx *gin.Context, params *user.UpdateUserParams) *app.Response
+	GetUsersUserID(ctx *gin.Context, params *user.GetUsersUserIDParams) *app.Response
+	PostUser(ctx *gin.Context, params *user.PostUserParams) *app.Response
 }
 
 func ginizePath(path string) string {
@@ -141,84 +62,24 @@ func ginizePath(path string) string {
 }
 
 // NewRoutes initializes the route structure for the Server service.
-func NewRoutes(engine *gin.Engine, ha HealthyApplication, petApplication PetApplication, storeApplication StoreApplication, userApplication UserApplication) *Routes {
+func NewRoutes(engine *gin.Engine, ha HealthyApplication, userApplication UserApplication) *Routes {
 	routes := &Routes{Engine: engine}
-	routes.AddPet.RouterGroup = routes.Group("/v2")
-	routes.AddPet.RouterGroup.Use(middleware.ContentTypes("application/json", "application/xml"))
+	routes.GetUsersUserID.RouterGroup = routes.Group("")
 
-	routes.CreateUser.RouterGroup = routes.Group("/v2")
-	routes.CreateUser.RouterGroup.Use(middleware.ContentTypes("application/json"))
+	routes.PostUser.RouterGroup = routes.Group("")
+	routes.PostUser.RouterGroup.Use(middleware.ContentTypes("application/json"))
 
-	routes.CreateUsersWithArrayInput.RouterGroup = routes.Group("/v2")
-	routes.CreateUsersWithArrayInput.RouterGroup.Use(middleware.ContentTypes("application/json"))
-
-	routes.CreateUsersWithListInput.RouterGroup = routes.Group("/v2")
-	routes.CreateUsersWithListInput.RouterGroup.Use(middleware.ContentTypes("application/json"))
-
-	routes.DeleteOrder.RouterGroup = routes.Group("/v2")
-
-	routes.DeletePet.RouterGroup = routes.Group("/v2")
-
-	routes.DeleteUser.RouterGroup = routes.Group("/v2")
-
-	routes.FindPetsByStatus.RouterGroup = routes.Group("/v2")
-
-	routes.FindPetsByTags.RouterGroup = routes.Group("/v2")
-
-	routes.GetInventory.RouterGroup = routes.Group("/v2")
-
-	routes.GetOrderByID.RouterGroup = routes.Group("/v2")
-
-	routes.GetPetByID.RouterGroup = routes.Group("/v2")
-
-	routes.GetUserByName.RouterGroup = routes.Group("/v2")
-
-	routes.LoginUser.RouterGroup = routes.Group("/v2")
-
-	routes.LogoutUser.RouterGroup = routes.Group("/v2")
-
-	routes.PlaceOrder.RouterGroup = routes.Group("/v2")
-	routes.PlaceOrder.RouterGroup.Use(middleware.ContentTypes("application/json"))
-
-	routes.UpdatePet.RouterGroup = routes.Group("/v2")
-	routes.UpdatePet.RouterGroup.Use(middleware.ContentTypes("application/json", "application/xml"))
-
-	routes.UpdatePetWithForm.RouterGroup = routes.Group("/v2")
-
-	routes.UpdateUser.RouterGroup = routes.Group("/v2")
-	routes.UpdateUser.RouterGroup.Use(middleware.ContentTypes("application/json"))
-
-	routes.UploadFile.RouterGroup = routes.Group("/v2")
-
-	routes.configureRoutes(ha, petApplication, storeApplication, userApplication)
+	routes.configureRoutes(ha, userApplication)
 	return routes
 }
 
 // configureRoutes configures the routes for the Server service.
 // Configuring of routes includes setting up Auth if it is enabled.
-func (r *Routes) configureRoutes(ha HealthyApplication, petApplication PetApplication, storeApplication StoreApplication, userApplication UserApplication) {
+func (r *Routes) configureRoutes(ha HealthyApplication, userApplication UserApplication) {
 	// setup all service routes after the authenticate middleware has been
 	// initialized.
-	r.AddPet.POST(ginizePath("/pet"), pet.AddPetEndpoint(petApplication.AddPet))
-	r.CreateUser.POST(ginizePath("/user"), user.CreateUserEndpoint(userApplication.CreateUser))
-	r.CreateUsersWithArrayInput.POST(ginizePath("/user/createWithArray"), user.CreateUsersWithArrayInputEndpoint(userApplication.CreateUsersWithArrayInput))
-	r.CreateUsersWithListInput.POST(ginizePath("/user/createWithList"), user.CreateUsersWithListInputEndpoint(userApplication.CreateUsersWithListInput))
-	r.DeleteOrder.DELETE(ginizePath("/store/order/{orderId}"), store.DeleteOrderEndpoint(storeApplication.DeleteOrder))
-	r.DeletePet.DELETE(ginizePath("/pet/{petId}"), pet.DeletePetEndpoint(petApplication.DeletePet))
-	r.DeleteUser.DELETE(ginizePath("/user/{username}"), user.DeleteUserEndpoint(userApplication.DeleteUser))
-	r.FindPetsByStatus.GET(ginizePath("/pet/findByStatus"), pet.FindPetsByStatusEndpoint(petApplication.FindPetsByStatus))
-	r.FindPetsByTags.GET(ginizePath("/pet/findByTags"), pet.FindPetsByTagsEndpoint(petApplication.FindPetsByTags))
-	r.GetInventory.GET(ginizePath("/store/inventory"), store.GetInventoryEndpoint(storeApplication.GetInventory))
-	r.GetOrderByID.GET(ginizePath("/store/order/{orderId}"), store.GetOrderByIDEndpoint(storeApplication.GetOrderByID))
-	r.GetPetByID.GET(ginizePath("/pet/{petId}"), pet.GetPetByIDEndpoint(petApplication.GetPetByID))
-	r.GetUserByName.GET(ginizePath("/user/{username}"), user.GetUserByNameEndpoint(userApplication.GetUserByName))
-	r.LoginUser.GET(ginizePath("/user/login"), user.LoginUserEndpoint(userApplication.LoginUser))
-	r.LogoutUser.GET(ginizePath("/user/logout"), user.LogoutUserEndpoint(userApplication.LogoutUser))
-	r.PlaceOrder.POST(ginizePath("/store/order"), store.PlaceOrderEndpoint(storeApplication.PlaceOrder))
-	r.UpdatePet.PUT(ginizePath("/pet"), pet.UpdatePetEndpoint(petApplication.UpdatePet))
-	r.UpdatePetWithForm.POST(ginizePath("/pet/{petId}"), pet.UpdatePetWithFormEndpoint(petApplication.UpdatePetWithForm))
-	r.UpdateUser.PUT(ginizePath("/user/{username}"), user.UpdateUserEndpoint(userApplication.UpdateUser))
-	r.UploadFile.POST(ginizePath("/pet/{petId}/uploadImage"), pet.UploadFileEndpoint(petApplication.UploadFile))
+	r.GetUsersUserID.GET(ginizePath("/users"), user.GetUsersUserIDEndpoint(userApplication.GetUsersUserID))
+	r.PostUser.POST(ginizePath("/user"), user.PostUserEndpoint(userApplication.PostUser))
 
 	// configure healthz endpoint
 	r.GET("/healthz", healthHandler(ha.Healthy))

@@ -13,6 +13,7 @@ import (
 	"test/internal/app/module1/domain/services"
 	"test/internal/app/module1/infrastructure/repos"
 	"test/internal/app/module1/interfaces/apis"
+	"test/internal/gen/restapi"
 	"test/internal/pkg/cachestore"
 	"test/internal/pkg/config"
 	"test/internal/pkg/database"
@@ -45,6 +46,10 @@ func CreateBackground(cf string) (*testcontainer.Background, func(), error) {
 	if err != nil {
 		return nil, nil, err
 	}
+	engine := http.NewTestGin(logger)
+	healthyApplicationImpl := application.NewHealthyApplicationImpl()
+	userApplicationImpl := application.NewUserApplicationImpl()
+	routes := restapi.NewRoutes(engine, healthyApplicationImpl, userApplicationImpl)
 	databaseOptions, err := database.NewOptions(viper, logger)
 	if err != nil {
 		return nil, nil, err
@@ -62,7 +67,6 @@ func CreateBackground(cf string) (*testcontainer.Background, func(), error) {
 	if err != nil {
 		return nil, nil, err
 	}
-	engine := http.NewTestGin(logger)
 	gormDB, err := database.NewGormDb(db, logger)
 	if err != nil {
 		return nil, nil, err
@@ -89,6 +93,7 @@ func CreateBackground(cf string) (*testcontainer.Background, func(), error) {
 	userDetailApplication := application.NewUserDetailsApplication(logger, userDetailServiceImpl)
 	userDetailAPI := apis.NewUserDetailAPI(api, userDetailApplication)
 	appContext := &context2.AppContext{
+		Routes:                routes,
 		InfraContext:          testInfraContext,
 		UserDetailAPI:         userDetailAPI,
 		UserDetailApplication: userDetailApplication,

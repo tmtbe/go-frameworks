@@ -48,12 +48,8 @@ var APIProviderSet = wire.NewSet(
 var ApplicationProviderSet = wire.NewSet(
 	application.NewUserDetailsApplication,
 	application.NewHealthyApplicationImpl,
-	application.NewPetApplicationImpl,
-	application.NewStoreApplication,
 	application.NewUserApplicationImpl,
-	wire.Bind(new(restapi.PetApplication), new(*application.PetApplicationImpl)),
 	wire.Bind(new(restapi.UserApplication), new(*application.UserApplicationImpl)),
-	wire.Bind(new(restapi.StoreApplication), new(*application.StoreApplication)),
 	wire.Bind(new(restapi.HealthyApplication), new(*application.HealthyApplicationImpl)),
 )
 

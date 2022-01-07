@@ -8,42 +8,144 @@ package models
 import (
 	"context"
 
+	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
-// User user
+// User User
 //
 // swagger:model User
 type User struct {
 
+	// The date that the user was created.
+	// Format: date
+	CreateDate strfmt.Date `json:"createDate,omitempty"`
+
+	// date of birth
+	// Example: 1997-10-31
+	// Required: true
+	// Format: date
+	DateOfBirth *strfmt.Date `json:"dateOfBirth"`
+
 	// email
-	Email string `json:"email,omitempty"`
+	// Required: true
+	// Format: email
+	Email *strfmt.Email `json:"email"`
+
+	// Set to true if the user's email has been verified.
+	// Required: true
+	EmailVerified *bool `json:"emailVerified"`
 
 	// first name
-	FirstName string `json:"firstName,omitempty"`
+	// Required: true
+	FirstName *string `json:"firstName"`
 
-	// id
+	// Unique identifier for the given user.
 	ID int64 `json:"id,omitempty"`
 
 	// last name
-	LastName string `json:"lastName,omitempty"`
-
-	// password
-	Password string `json:"password,omitempty"`
-
-	// phone
-	Phone string `json:"phone,omitempty"`
-
-	// User Status
-	UserStatus int32 `json:"userStatus,omitempty"`
-
-	// username
-	Username string `json:"username,omitempty"`
+	// Required: true
+	LastName *string `json:"lastName"`
 }
 
 // Validate validates this user
 func (m *User) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateCreateDate(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateDateOfBirth(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateEmail(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateEmailVerified(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateFirstName(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateLastName(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *User) validateCreateDate(formats strfmt.Registry) error {
+	if swag.IsZero(m.CreateDate) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("createDate", "body", "date", m.CreateDate.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *User) validateDateOfBirth(formats strfmt.Registry) error {
+
+	if err := validate.Required("dateOfBirth", "body", m.DateOfBirth); err != nil {
+		return err
+	}
+
+	if err := validate.FormatOf("dateOfBirth", "body", "date", m.DateOfBirth.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *User) validateEmail(formats strfmt.Registry) error {
+
+	if err := validate.Required("email", "body", m.Email); err != nil {
+		return err
+	}
+
+	if err := validate.FormatOf("email", "body", "email", m.Email.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *User) validateEmailVerified(formats strfmt.Registry) error {
+
+	if err := validate.Required("emailVerified", "body", m.EmailVerified); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *User) validateFirstName(formats strfmt.Registry) error {
+
+	if err := validate.Required("firstName", "body", m.FirstName); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *User) validateLastName(formats strfmt.Registry) error {
+
+	if err := validate.Required("lastName", "body", m.LastName); err != nil {
+		return err
+	}
+
 	return nil
 }
 

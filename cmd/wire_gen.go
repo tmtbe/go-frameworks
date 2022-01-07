@@ -50,16 +50,14 @@ func CreateApp(cf string) (*app.Application, func(), error) {
 	if err != nil {
 		return nil, nil, err
 	}
-	httpOptions, err := transports.NewOptions(viper)
+	transportsOptions, err := transports.NewOptions(viper)
 	if err != nil {
 		return nil, nil, err
 	}
-	engine := transports.NewGin(httpOptions, logger)
+	engine := transports.NewGin(transportsOptions, logger)
 	healthyApplicationImpl := application.NewHealthyApplicationImpl()
-	petApplicationImpl := application.NewPetApplicationImpl()
-	storeApplication := application.NewStoreApplication()
 	userApplicationImpl := application.NewUserApplicationImpl()
-	routes := restapi.NewRoutes(engine, healthyApplicationImpl, petApplicationImpl, storeApplication, userApplicationImpl)
+	routes := restapi.NewRoutes(engine, healthyApplicationImpl, userApplicationImpl)
 	databaseOptions, err := database.NewOptions(viper, logger)
 	if err != nil {
 		return nil, nil, err
@@ -124,7 +122,7 @@ func CreateApp(cf string) (*app.Application, func(), error) {
 		DetailRepository:      postgresDetailRepository,
 		UserDetailService:     userDetailServiceImpl,
 	}
-	server, cleanup2, err := transports.NewServer(httpOptions, logger, engine)
+	server, cleanup2, err := transports.NewServer(transportsOptions, logger, engine)
 	if err != nil {
 		cleanup()
 		return nil, nil, err

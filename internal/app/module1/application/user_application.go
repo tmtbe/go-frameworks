@@ -2,53 +2,35 @@ package application
 
 import (
 	"github.com/gin-gonic/gin"
-	user2 "test/internal/gen/restapi/operations/user"
+	"github.com/go-openapi/strfmt"
+	"test/internal/gen/models"
+	"test/internal/gen/restapi/operations/user"
 	"test/internal/pkg/app"
 )
 
 type UserApplicationImpl struct {
 }
 
+func (u UserApplicationImpl) GetUsersUserID(ctx *gin.Context, params *user.GetUsersUserIDParams) *app.Response {
+	return &app.Response{
+		Code: 200,
+		Body: &models.User{
+			CreateDate:    strfmt.Date{},
+			DateOfBirth:   nil,
+			Email:         nil,
+			EmailVerified: nil,
+			FirstName:     nil,
+			ID:            0,
+			LastName:      nil,
+		},
+	}
+}
+
+func (u UserApplicationImpl) PostUser(ctx *gin.Context, params *user.PostUserParams) *app.Response {
+	//TODO implement me
+	panic("implement me")
+}
+
 func NewUserApplicationImpl() *UserApplicationImpl {
 	return &UserApplicationImpl{}
-}
-
-func (u UserApplicationImpl) CreateUser(ctx *gin.Context, params *user2.CreateUserParams) *app.Response {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (u UserApplicationImpl) CreateUsersWithArrayInput(ctx *gin.Context, params *user2.CreateUsersWithArrayInputParams) *app.Response {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (u UserApplicationImpl) CreateUsersWithListInput(ctx *gin.Context, params *user2.CreateUsersWithListInputParams) *app.Response {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (u UserApplicationImpl) DeleteUser(ctx *gin.Context, params *user2.DeleteUserParams) *app.Response {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (u UserApplicationImpl) GetUserByName(ctx *gin.Context, params *user2.GetUserByNameParams) *app.Response {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (u UserApplicationImpl) LoginUser(ctx *gin.Context, params *user2.LoginUserParams) *app.Response {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (u UserApplicationImpl) LogoutUser(ctx *gin.Context) *app.Response {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (u UserApplicationImpl) UpdateUser(ctx *gin.Context, params *user2.UpdateUserParams) *app.Response {
-	//TODO implement me
-	panic("implement me")
 }

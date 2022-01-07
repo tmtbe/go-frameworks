@@ -9,7 +9,8 @@ install:
 	go get github.com/google/wire/cmd/wire
 	husky init
 .PHONY: run
-run: wire
+run: wire fastRun
+fastRun:
 	go run ./cmd -f .
 .PHONY: wire
 wire: genApi
@@ -19,7 +20,6 @@ genApi:
 	go run tools/gin-swagger/main.go -f swagger.yaml -A test
 .PHONY: build
 build: clean
-	mkdir dist
 	cp -r resources dist
 	GOOS=linux GOARCH="amd64" go build -o dist/app-linux-amd64 ./cmd;
 	GOOS=darwin GOARCH="amd64" go build -o dist/app-darwin-amd64 ./cmd;
