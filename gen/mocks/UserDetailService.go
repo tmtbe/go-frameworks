@@ -3,7 +3,7 @@
 package mocks
 
 import (
-	"test/internal/app/module1/domain/services"
+	services "test/internal/app/module1/domain/services"
 
 	mock "github.com/stretchr/testify/mock"
 )

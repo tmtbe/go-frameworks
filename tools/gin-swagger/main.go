@@ -63,7 +63,7 @@ func run(application, specPath string) error {
 			"middleware": "test/internal/pkg/transports/http/middleware",
 		},
 		Spec:              specPath,
-		Target:            "./internal/gen",
+		Target:            "./gen",
 		APIPackage:        "operations",
 		ModelPackage:      "models",
 		ServerPackage:     "restapi",

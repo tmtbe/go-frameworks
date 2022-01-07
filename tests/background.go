@@ -6,7 +6,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
-	"test/internal/app/module1/interfaces/apis"
+	"test/internal/app/module1/adapter/apis"
 	"test/tests/pkg/testcontainer"
 )
 

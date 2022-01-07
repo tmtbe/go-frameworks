@@ -7,13 +7,13 @@ package tests
 
 import (
 	"github.com/google/wire"
+	"test/gen/restapi"
 	"test/internal/app"
 	context2 "test/internal/app/context"
-	"test/internal/app/module1/application"
+	"test/internal/app/module1/adapter/apis"
+	"test/internal/app/module1/adapter/repos"
 	"test/internal/app/module1/domain/services"
-	"test/internal/app/module1/infrastructure/repos"
-	"test/internal/app/module1/interfaces/apis"
-	"test/internal/gen/restapi"
+	"test/internal/app/module1/usercase"
 	"test/internal/pkg/cachestore"
 	"test/internal/pkg/config"
 	"test/internal/pkg/database"
@@ -47,9 +47,10 @@ func CreateBackground(cf string) (*testcontainer.Background, func(), error) {
 		return nil, nil, err
 	}
 	engine := http.NewTestGin(logger)
-	healthyApplicationImpl := application.NewHealthyApplicationImpl()
-	userApplicationImpl := application.NewUserApplicationImpl()
-	routes := restapi.NewRoutes(engine, healthyApplicationImpl, userApplicationImpl)
+	healthyUsercaseImpl := usercase.NewHealthyUsercaseImpl()
+	petUsercaseImpl := usercase.NewPetUsercaseImpl()
+	userUsercaseImpl := usercase.NewUserUsercaseImpl()
+	routes := restapi.NewRoutes(engine, healthyUsercaseImpl, petUsercaseImpl, userUsercaseImpl)
 	databaseOptions, err := database.NewOptions(viper, logger)
 	if err != nil {
 		return nil, nil, err
@@ -90,16 +91,16 @@ func CreateBackground(cf string) (*testcontainer.Background, func(), error) {
 	postgresDetailRepository := repos.NewPostgresDetailsRepository(logger, gormDB)
 	postgresUserRepository := repos.NewPostgresUserRepository(logger, gormDB)
 	userDetailServiceImpl := services.NewUserDetailServiceImpl(logger, postgresDetailRepository, postgresUserRepository)
-	userDetailApplication := application.NewUserDetailsApplication(logger, userDetailServiceImpl)
-	userDetailAPI := apis.NewUserDetailAPI(api, userDetailApplication)
+	userDetailUsercase := usercase.NewUserDetailsUsercase(logger, userDetailServiceImpl)
+	userDetailAPI := apis.NewUserDetailAPI(api, userDetailUsercase)
 	appContext := &context2.AppContext{
-		Routes:                routes,
-		InfraContext:          testInfraContext,
-		UserDetailAPI:         userDetailAPI,
-		UserDetailApplication: userDetailApplication,
-		UserRepository:        postgresUserRepository,
-		DetailRepository:      postgresDetailRepository,
-		UserDetailService:     userDetailServiceImpl,
+		Routes:             routes,
+		InfraContext:       testInfraContext,
+		UserDetailAPI:      userDetailAPI,
+		UserDetailUsercase: userDetailUsercase,
+		UserRepository:     postgresUserRepository,
+		DetailRepository:   postgresDetailRepository,
+		UserDetailService:  userDetailServiceImpl,
 	}
 	background := &testcontainer.Background{
 		AppContext:            appContext,
@@ -131,8 +132,8 @@ func CreateUserDetailAPI(cf string, s services.UserDetailService) (*apis.UserDet
 		CacheStore: memoryStore,
 	}
 	api := apis.NewAPI(logger, testMockAPIInfraContext)
-	userDetailApplication := application.NewUserDetailsApplication(logger, s)
-	userDetailAPI := apis.NewUserDetailAPI(api, userDetailApplication)
+	userDetailUsercase := usercase.NewUserDetailsUsercase(logger, s)
+	userDetailAPI := apis.NewUserDetailAPI(api, userDetailUsercase)
 	return userDetailAPI, nil
 }
 

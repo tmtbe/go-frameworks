@@ -7,8 +7,8 @@ import (
 	"github.com/google/wire"
 	"test/internal/app"
 	"test/internal/app/context"
+	"test/internal/app/module1/adapter/apis"
 	"test/internal/app/module1/domain/services"
-	"test/internal/app/module1/interfaces/apis"
 	"test/tests/pkg"
 	"test/tests/pkg/testcontainer"
 )
@@ -23,5 +23,5 @@ func CreateBackground(cf string) (*testcontainer.Background, func(), error) {
 }
 
 func CreateUserDetailAPI(cf string, s services.UserDetailService) (*apis.UserDetailAPI, error) {
-	panic(wire.Build(pkg.APIMockProviderSet, context.APIProviderSet, context.ApplicationProviderSet))
+	panic(wire.Build(pkg.APIMockProviderSet, context.APIProviderSet, context.UsercaseProviderSet))
 }

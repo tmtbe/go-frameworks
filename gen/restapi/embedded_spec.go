@@ -34,6 +34,33 @@ func init() {
   },
   "host": "localhost:8081",
   "paths": {
+    "/pets": {
+      "get": {
+        "tags": [
+          "pet"
+        ],
+        "summary": "Your GET endpoint",
+        "operationId": "get-pets",
+        "parameters": [
+          {
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32",
+            "name": "id",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/Pet"
+            }
+          }
+        }
+      }
+    },
     "/user": {
       "post": {
         "description": "Create a new user.",
@@ -120,6 +147,30 @@ func init() {
     }
   },
   "definitions": {
+    "Pet": {
+      "description": "宠物",
+      "type": "object",
+      "title": "Pet",
+      "properties": {
+        "age": {
+          "type": "integer",
+          "format": "int32",
+          "exclusiveMinimum": true
+        },
+        "id": {
+          "type": "integer",
+          "format": "int32",
+          "minimum": -100
+        },
+        "name": {
+          "type": "string",
+          "pattern": "[1|2|3]"
+        },
+        "sex": {
+          "type": "boolean"
+        }
+      }
+    },
     "User": {
       "type": "object",
       "title": "User",
@@ -165,6 +216,9 @@ func init() {
   "tags": [
     {
       "name": "user"
+    },
+    {
+      "name": "pet"
     }
   ]
 }`))
@@ -185,6 +239,33 @@ func init() {
   },
   "host": "localhost:8081",
   "paths": {
+    "/pets": {
+      "get": {
+        "tags": [
+          "pet"
+        ],
+        "summary": "Your GET endpoint",
+        "operationId": "get-pets",
+        "parameters": [
+          {
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32",
+            "name": "id",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/Pet"
+            }
+          }
+        }
+      }
+    },
     "/user": {
       "post": {
         "description": "Create a new user.",
@@ -272,6 +353,31 @@ func init() {
     }
   },
   "definitions": {
+    "Pet": {
+      "description": "宠物",
+      "type": "object",
+      "title": "Pet",
+      "properties": {
+        "age": {
+          "type": "integer",
+          "format": "int32",
+          "minimum": 0,
+          "exclusiveMinimum": true
+        },
+        "id": {
+          "type": "integer",
+          "format": "int32",
+          "minimum": -100
+        },
+        "name": {
+          "type": "string",
+          "pattern": "[1|2|3]"
+        },
+        "sex": {
+          "type": "boolean"
+        }
+      }
+    },
     "User": {
       "type": "object",
       "title": "User",
@@ -317,6 +423,9 @@ func init() {
   "tags": [
     {
       "name": "user"
+    },
+    {
+      "name": "pet"
     }
   ]
 }`))

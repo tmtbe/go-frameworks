@@ -3,17 +3,17 @@ package apis
 import (
 	cache "github.com/chenyahui/gin-cache"
 	"github.com/gin-gonic/gin"
-	"test/internal/app/module1/application"
+	"test/internal/app/module1/usercase"
 	"test/internal/pkg/app"
 	"time"
 )
 
 type UserDetailAPI struct {
 	API
-	application *application.UserDetailApplication
+	application *usercase.UserDetailUsercase
 }
 
-func NewUserDetailAPI(api *API, a *application.UserDetailApplication) *UserDetailAPI {
+func NewUserDetailAPI(api *API, a *usercase.UserDetailUsercase) *UserDetailAPI {
 	v := &UserDetailAPI{
 		API:         *api,
 		application: a,

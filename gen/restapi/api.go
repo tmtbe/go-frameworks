@@ -9,7 +9,8 @@ import (
 	"net/http"
 	"strings"
 
-	"test/internal/gen/restapi/operations/user"
+	"test/gen/restapi/operations/pet"
+	"test/gen/restapi/operations/user"
 	"test/internal/pkg/app"
 	"test/internal/pkg/transports/middleware"
 
@@ -19,6 +20,9 @@ import (
 // Routes defines all the routes of the Server service.
 type Routes struct {
 	*gin.Engine
+	GetPets struct {
+		*gin.RouterGroup
+	}
 	GetUsersUserID struct {
 		*gin.RouterGroup
 	}
@@ -48,11 +52,15 @@ func healthHandler(healthFunc func() bool) gin.HandlerFunc {
 
 // Service is the interface that must be implemented in order to provide
 // business logic for the Server service.
-type HealthyApplication interface {
+type HealthyUsercase interface {
 	Healthy() bool
 }
 
-type UserApplication interface {
+type PetUsercase interface {
+	GetPets(ctx *gin.Context, params *pet.GetPetsParams) *app.Response
+}
+
+type UserUsercase interface {
 	GetUsersUserID(ctx *gin.Context, params *user.GetUsersUserIDParams) *app.Response
 	PostUser(ctx *gin.Context, params *user.PostUserParams) *app.Response
 }
@@ -62,24 +70,27 @@ func ginizePath(path string) string {
 }
 
 // NewRoutes initializes the route structure for the Server service.
-func NewRoutes(engine *gin.Engine, ha HealthyApplication, userApplication UserApplication) *Routes {
+func NewRoutes(engine *gin.Engine, ha HealthyUsercase, petUsercase PetUsercase, userUsercase UserUsercase) *Routes {
 	routes := &Routes{Engine: engine}
+	routes.GetPets.RouterGroup = routes.Group("")
+
 	routes.GetUsersUserID.RouterGroup = routes.Group("")
 
 	routes.PostUser.RouterGroup = routes.Group("")
 	routes.PostUser.RouterGroup.Use(middleware.ContentTypes("application/json"))
 
-	routes.configureRoutes(ha, userApplication)
+	routes.configureRoutes(ha, petUsercase, userUsercase)
 	return routes
 }
 
 // configureRoutes configures the routes for the Server service.
 // Configuring of routes includes setting up Auth if it is enabled.
-func (r *Routes) configureRoutes(ha HealthyApplication, userApplication UserApplication) {
+func (r *Routes) configureRoutes(ha HealthyUsercase, petUsercase PetUsercase, userUsercase UserUsercase) {
 	// setup all service routes after the authenticate middleware has been
 	// initialized.
-	r.GetUsersUserID.GET(ginizePath("/users"), user.GetUsersUserIDEndpoint(userApplication.GetUsersUserID))
-	r.PostUser.POST(ginizePath("/user"), user.PostUserEndpoint(userApplication.PostUser))
+	r.GetPets.GET(ginizePath("/pets"), pet.GetPetsEndpoint(petUsercase.GetPets))
+	r.GetUsersUserID.GET(ginizePath("/users"), user.GetUsersUserIDEndpoint(userUsercase.GetUsersUserID))
+	r.PostUser.POST(ginizePath("/user"), user.PostUserEndpoint(userUsercase.PostUser))
 
 	// configure healthz endpoint
 	r.GET("/healthz", healthHandler(ha.Healthy))

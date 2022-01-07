@@ -1,30 +1,24 @@
 dependenciesRules:
-  - package: "**.interfaces.**"
+  - package: "**.adapter.**"
     shouldOnlyDependsOn:
-      - "**.interfaces.**"
-      - "**.application.**"
-      - "**.pkg.**"
-  - package: "**.application.**"
-    shouldOnlyDependsOn:
-      - "**.application.**"
-      - "**.domain.**"
-      - "**.pkg.**"
+      - "**.domain.clients.**"
+      - "**.domain.repos.**"
+      - "**.adapter.**"
+      - "**.usercase.**"
       - "**.gen.**"
+      - "**.pkg.**"
+  - package: "**.usercase.**"
+    shouldOnlyDependsOn:
+      - "**.usercase.**"
+      - "**.domain.**"
+      - "**.gen.**"
+      - "**.pkg.**"
   - package: "**.domain.**"
     shouldOnlyDependsOn:
       - "**.domain.**"
       - "**.pkg.**"
-  - package: "**.infrastructure.**"
-    shouldOnlyDependsOn:
-      - "**.domain.clients.**"
-      - "**.domain.repos.**"
-      - "**.infrastructure.**"
-      - "**.pkg.**"
 
 contentsRules:
-  - package: "**.application.services"
-    shouldNotContainMethods: true
-    shouldNotContainFunctions: true
   - package: "**.domain.clients"
     shouldNotContainMethods: true
     shouldNotContainFunctions: true

@@ -9,11 +9,11 @@ install:
 	go get github.com/google/wire/cmd/wire
 	husky init
 .PHONY: run
-run: wire fastRun
+run: clean genApi wire fastRun
 fastRun:
 	go run ./cmd -f .
 .PHONY: wire
-wire: genApi
+wire:
 	go run github.com/google/wire/cmd/wire ./cmd
 .PHONY: genApi
 genApi:
@@ -26,10 +26,12 @@ build: clean
 .PHONY: clean
 clean:
 	rm -rf dist
+	rm -rf gen
 	mkdir dist
+	mkdir gen
 .PHONY: mock
-mock: clean
-	mockery --all --output ./tests/mocks
+mock:
+	mockery --all --output ./gen/mocks
 .PHONY: check
 check:
 	# golangci-lint run
@@ -40,4 +42,4 @@ onlyTest:
 	go test -v  ./internal/app/... -f `pwd` -covermode=count -coverprofile=dist/cover.out
 	go test -v  ./tests/... -f `pwd` -covermode=count -coverprofile=dist/cover.out
 .PHONY: test
-test: check mock onlyTest
+test: clean check genApi mock onlyTest

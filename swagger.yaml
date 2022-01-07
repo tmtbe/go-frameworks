@@ -11,7 +11,35 @@ consumes:
   - application/json
 tags:
   - name: user
+  - name: pet
 paths:
+  /user:
+    post:
+      tags:
+        - user
+      summary: Create New User
+      operationId: post-user
+      responses:
+        '200':
+          description: User Created
+          schema:
+            $ref: '#/definitions/User'
+        '400':
+          description: Missing Required Information
+          schema:
+            type: 'null'
+        '409':
+          description: Email Already Taken
+          schema:
+            type: 'null'
+      description: Create a new user.
+      parameters:
+        - in: body
+          name: body
+          schema:
+            $ref: '#/definitions/User'
+          description: Post the necessary fields for the API to create a new user.
+          x-examples: {}
   /users:
     parameters: []
     get:
@@ -45,33 +73,24 @@ paths:
           name: id
           minimum: 0
           format: int32
-  /user:
-    post:
+  /pets:
+    get:
+      summary: Your GET endpoint
       tags:
-        - user
-      summary: Create New User
-      operationId: post-user
+        - pet
       responses:
         '200':
-          description: User Created
+          description: OK
           schema:
-            $ref: '#/definitions/User'
-        '400':
-          description: Missing Required Information
-          schema:
-            type: 'null'
-        '409':
-          description: Email Already Taken
-          schema:
-            type: 'null'
-      description: Create a new user.
+            $ref: '#/definitions/Pet'
+      operationId: get-pets
       parameters:
-        - in: body
-          name: body
-          schema:
-            $ref: '#/definitions/User'
-          description: Post the necessary fields for the API to create a new user.
-          x-examples: {}
+        - type: integer
+          in: query
+          name: id
+          minimum: 1
+          required: true
+          format: int32
 definitions:
   User:
     title: User
@@ -104,3 +123,24 @@ definitions:
       - email
       - dateOfBirth
       - emailVerified
+  Pet:
+    title: Pet
+    type: object
+    description: 宠物
+    properties:
+      id:
+        type: integer
+        format: int32
+        minimum: -100
+      name:
+        type: string
+        pattern: '[1|2|3]'
+      sex:
+        type: boolean
+      age:
+        type: integer
+        format: int32
+        minimum: 0
+        exclusiveMinimum: true
+responses: {}
+parameters: {}

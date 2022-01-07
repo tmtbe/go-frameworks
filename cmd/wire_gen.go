@@ -7,13 +7,13 @@ package main
 
 import (
 	"github.com/google/wire"
+	"test/gen/restapi"
 	app2 "test/internal/app"
 	context2 "test/internal/app/context"
-	"test/internal/app/module1/application"
+	"test/internal/app/module1/adapter/apis"
+	"test/internal/app/module1/adapter/repos"
 	"test/internal/app/module1/domain/services"
-	"test/internal/app/module1/infrastructure/repos"
-	"test/internal/app/module1/interfaces/apis"
-	"test/internal/gen/restapi"
+	"test/internal/app/module1/usercase"
 	"test/internal/pkg"
 	"test/internal/pkg/app"
 	"test/internal/pkg/cachestore"
@@ -55,9 +55,10 @@ func CreateApp(cf string) (*app.Application, func(), error) {
 		return nil, nil, err
 	}
 	engine := transports.NewGin(transportsOptions, logger)
-	healthyApplicationImpl := application.NewHealthyApplicationImpl()
-	userApplicationImpl := application.NewUserApplicationImpl()
-	routes := restapi.NewRoutes(engine, healthyApplicationImpl, userApplicationImpl)
+	healthyUsercaseImpl := usercase.NewHealthyUsercaseImpl()
+	petUsercaseImpl := usercase.NewPetUsercaseImpl()
+	userUsercaseImpl := usercase.NewUserUsercaseImpl()
+	routes := restapi.NewRoutes(engine, healthyUsercaseImpl, petUsercaseImpl, userUsercaseImpl)
 	databaseOptions, err := database.NewOptions(viper, logger)
 	if err != nil {
 		return nil, nil, err
@@ -111,29 +112,29 @@ func CreateApp(cf string) (*app.Application, func(), error) {
 	postgresDetailRepository := repos.NewPostgresDetailsRepository(logger, gormDB)
 	postgresUserRepository := repos.NewPostgresUserRepository(logger, gormDB)
 	userDetailServiceImpl := services.NewUserDetailServiceImpl(logger, postgresDetailRepository, postgresUserRepository)
-	userDetailApplication := application.NewUserDetailsApplication(logger, userDetailServiceImpl)
-	userDetailAPI := apis.NewUserDetailAPI(api, userDetailApplication)
+	userDetailUsercase := usercase.NewUserDetailsUsercase(logger, userDetailServiceImpl)
+	userDetailAPI := apis.NewUserDetailAPI(api, userDetailUsercase)
 	appContext := &context2.AppContext{
-		Routes:                routes,
-		InfraContext:          appInfraContext,
-		UserDetailAPI:         userDetailAPI,
-		UserDetailApplication: userDetailApplication,
-		UserRepository:        postgresUserRepository,
-		DetailRepository:      postgresDetailRepository,
-		UserDetailService:     userDetailServiceImpl,
+		Routes:             routes,
+		InfraContext:       appInfraContext,
+		UserDetailAPI:      userDetailAPI,
+		UserDetailUsercase: userDetailUsercase,
+		UserRepository:     postgresUserRepository,
+		DetailRepository:   postgresDetailRepository,
+		UserDetailService:  userDetailServiceImpl,
 	}
 	server, cleanup2, err := transports.NewServer(transportsOptions, logger, engine)
 	if err != nil {
 		cleanup()
 		return nil, nil, err
 	}
-	appApplication, cleanup3, err := app2.NewApp(appOptions, appContext, logger, server)
+	application, cleanup3, err := app2.NewApp(appOptions, appContext, logger, server)
 	if err != nil {
 		cleanup2()
 		cleanup()
 		return nil, nil, err
 	}
-	return appApplication, func() {
+	return application, func() {
 		cleanup3()
 		cleanup2()
 		cleanup()

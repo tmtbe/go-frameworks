@@ -13,7 +13,7 @@ import (
 	"github.com/go-openapi/runtime"
 	strfmt "github.com/go-openapi/strfmt"
 
-	"test/internal/gen/models"
+	"test/gen/models"
 	"test/internal/pkg/app"
 )
 

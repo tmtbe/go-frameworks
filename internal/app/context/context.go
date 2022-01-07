@@ -2,12 +2,12 @@ package context
 
 import (
 	"github.com/google/wire"
-	"test/internal/app/module1/application"
+	"test/gen/restapi"
+	apis2 "test/internal/app/module1/adapter/apis"
+	"test/internal/app/module1/adapter/repos"
 	reposDef "test/internal/app/module1/domain/repos"
 	"test/internal/app/module1/domain/services"
-	"test/internal/app/module1/infrastructure/repos"
-	"test/internal/app/module1/interfaces/apis"
-	"test/internal/gen/restapi"
+	"test/internal/app/module1/usercase"
 	"test/internal/pkg/context"
 )
 
@@ -16,9 +16,9 @@ type AppContext struct {
 
 	context.InfraContext
 
-	*apis.UserDetailAPI
+	*apis2.UserDetailAPI
 
-	*application.UserDetailApplication
+	*usercase.UserDetailUsercase
 
 	reposDef.UserRepository
 	reposDef.DetailRepository
@@ -30,8 +30,8 @@ var ProviderSet = wire.NewSet(
 	wire.Struct(new(AppContext), "*"),
 	// API
 	APIProviderSet,
-	// Application
-	ApplicationProviderSet,
+	// Usercase
+	UsercaseProviderSet,
 	// Service
 	ServiceProviderSet,
 	// Repo
@@ -39,18 +39,20 @@ var ProviderSet = wire.NewSet(
 )
 
 var APIProviderSet = wire.NewSet(
-	apis.NewAPI,
-	apis.NewUserDetailAPI,
+	apis2.NewAPI,
+	apis2.NewUserDetailAPI,
 	// 自动生成的API Routes注入
 	restapi.NewRoutes,
 )
 
-var ApplicationProviderSet = wire.NewSet(
-	application.NewUserDetailsApplication,
-	application.NewHealthyApplicationImpl,
-	application.NewUserApplicationImpl,
-	wire.Bind(new(restapi.UserApplication), new(*application.UserApplicationImpl)),
-	wire.Bind(new(restapi.HealthyApplication), new(*application.HealthyApplicationImpl)),
+var UsercaseProviderSet = wire.NewSet(
+	usercase.NewUserDetailsUsercase,
+	usercase.NewHealthyUsercaseImpl,
+	usercase.NewUserUsercaseImpl,
+	usercase.NewPetUsercaseImpl,
+	wire.Bind(new(restapi.UserUsercase), new(*usercase.UserUsercaseImpl)),
+	wire.Bind(new(restapi.HealthyUsercase), new(*usercase.HealthyUsercaseImpl)),
+	wire.Bind(new(restapi.PetUsercase), new(*usercase.PetUsercaseImpl)),
 )
 
 var ServiceProviderSet = wire.NewSet(

@@ -4,8 +4,8 @@ import (
 	"flag"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"test/gen/mocks"
 	"test/internal/app/module1/domain/services"
-	"test/tests/mocks"
 	"testing"
 )
 
