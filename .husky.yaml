@@ -3,7 +3,7 @@ hooks:
   pre-commit:
     - make clean check
   pre-push:
-    - make onlyTest
+    - make test
   commit-msg:
     - husky lint-commit
 
