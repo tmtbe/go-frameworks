@@ -123,7 +123,7 @@ import (
 
 // {{ pascalize .Name }}Endpoint executes the core logic of the related
 // route endpoint.
-func {{ pascalize .Name }}Endpoint(handler func(ctx *gin.Context{{ if .Params }}, params *{{ pascalize .Name }}Params{{ end }}) *app.Response) gin.HandlerFunc {
+func {{ pascalize .Name }}Endpoint(handler func(ctx *gin.Context{{ if .Params }}, params *{{ pascalize .Name }}Params{{ end }}) restapi.Response) gin.HandlerFunc {
 	return func (ctx *gin.Context) {
 
 		{{ if .Params }}// generate params from request
@@ -143,11 +143,11 @@ func {{ pascalize .Name }}Endpoint(handler func(ctx *gin.Context{{ if .Params }}
 		}
 		{{ end }}
 		resp := handler(ctx{{ if .Params }}, params{{end}})
-		switch resp.Code {
+		switch resp.GetResponse().GetCode() {
 		case http.StatusNoContent:
-			ctx.AbortWithStatus(resp.Code)
+			ctx.AbortWithStatus(http.StatusNoContent)
 		default:
-			ctx.JSON(resp.Code, resp.Body)
+			ctx.JSON(resp.GetResponse().GetCode(), resp.GetResponse().GetModel())
 		}
 	}
 }

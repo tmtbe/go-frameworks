@@ -4,17 +4,16 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-openapi/strfmt"
 	"test/gen/models"
+	"test/gen/restapi"
 	user2 "test/gen/restapi/operations/user"
-	"test/internal/pkg/app"
 )
 
 type UserUsercaseImpl struct {
 }
 
-func (u UserUsercaseImpl) GetUsersUserID(ctx *gin.Context, params *user2.GetUsersUserIDParams) *app.Response {
-	return &app.Response{
-		Code: 200,
-		Body: &models.User{
+func (u UserUsercaseImpl) GetUsersUserID(ctx *gin.Context, params *user2.GetUsersUserIDParams) *restapi.GetUsersUserIDResponse {
+	g := &restapi.GetUsersUserIDOK{
+		Model: models.User{
 			CreateDate:    strfmt.Date{},
 			DateOfBirth:   nil,
 			Email:         nil,
@@ -24,9 +23,10 @@ func (u UserUsercaseImpl) GetUsersUserID(ctx *gin.Context, params *user2.GetUser
 			LastName:      nil,
 		},
 	}
+	return g.ToResponse()
 }
 
-func (u UserUsercaseImpl) PostUser(ctx *gin.Context, params *user2.PostUserParams) *app.Response {
+func (u UserUsercaseImpl) PostUser(ctx *gin.Context, params *user2.PostUserParams) *restapi.PostUserResponse {
 	//TODO implement me
 	panic("implement me")
 }

@@ -59,11 +59,61 @@ type HealthyUsercase interface {
 }
 {{range .OperationGroups}}
 type {{ pascalize .Name }}Usercase interface {
-	{{range .Operations}}{{ pascalize .Name }}(ctx *gin.Context{{ if .Params }}, params *{{.Package}}.{{ pascalize .Name }}Params{{ end }}) *app.Response
+	{{range .Operations}}{{ pascalize .Name }}(ctx *gin.Context{{ if .Params }}, params *{{.Package}}.{{ pascalize .Name }}Params{{ end }}) *{{ pascalize .Name }}Response
 {{end}}
 }
 {{end}}
 
+{{range .OperationGroups}}
+{{range $o := .Operations}}
+{{range .Responses}}
+type {{ pascalize .Name }} struct{
+    Model {{.Schema.GoType}}
+}
+func (resp *{{ pascalize .Name }}) GetCode() int{
+    return {{.Code}}
+}
+func (resp *{{ pascalize .Name }}) GetModel() interface{}{
+    return resp.Model
+}
+func  (resp *{{ pascalize .Name }}) ToResponse()*{{ pascalize $o.Name }}Response{
+	return &{{  pascalize $o.Name }}Response{
+		{{ pascalize .Name }}:       resp,
+	}
+}
+
+{{end}}
+{{end}}
+{{end}}
+
+{{range .OperationGroups}}
+{{range .Operations}}
+type {{ pascalize .Name }}Response struct{
+{{range .Responses}} {{ pascalize .Name }} *{{ pascalize .Name }}
+{{end}}
+}
+func (resp *{{ pascalize .Name }}Response) GetResponse() Code{
+    return getResponse({{range .Responses}} resp.{{ pascalize .Name }}, {{end}})
+}
+{{end}}
+{{end}}
+
+type Code interface {
+	GetCode() int
+	GetModel() interface{}
+}
+type Response interface {
+	GetResponse() Code
+}
+
+func getResponse(codes ...Code)Code{
+	for _,code:=range codes {
+		if code!=nil {
+			return code
+		}
+	}
+	panic("code can't be nil")
+}
 
 func ginizePath(path string) string {
 	return strings.Replace(strings.Replace(path, "{", ":", -1), "}", "", -1)
@@ -86,7 +136,9 @@ func NewRoutes(engine *gin.Engine,ha HealthyUsercase, {{range .OperationGroups}}
 func (r *Routes) configureRoutes(ha HealthyUsercase, {{range .OperationGroups}}{{.Name}}Usercase {{ pascalize .Name }}Usercase ,{{end}}) {
 	// setup all service routes after the authenticate middleware has been
 	// initialized.
-	{{range .Operations}}r.{{ pascalize .Name }}.{{.Method}}(ginizePath({{printf "%q" .Path}}), {{.Package}}.{{ pascalize .Name }}Endpoint({{.Package}}Usercase.{{ pascalize .Name }}))
+	{{range .Operations}}r.{{ pascalize .Name }}.{{.Method}}(ginizePath({{printf "%q" .Path}}), {{.Package}}.{{ pascalize .Name }}Endpoint(func (ctx *gin.Context{{ if .Params }}, params *{{.Package}}.{{ pascalize .Name }}Params{{ end }})Response{
+	return {{.Package}}Usercase.{{ pascalize .Name }}(ctx,params)
+	}))
 {{end}}
     // configure healthz endpoint
     r.GET("/healthz", healthHandler(ha.Healthy))

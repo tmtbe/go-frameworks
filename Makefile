@@ -6,7 +6,6 @@ install:
 	go get github.com/go-courier/husky/cmd/husky
 	go get github.com/golangci/golangci-lint/cmd/golangci-lint
 	go mod tidy
-	go get github.com/google/wire/cmd/wire
 	husky init
 .PHONY: run
 run: clean genApi wire fastRun
@@ -40,6 +39,6 @@ check:
 onlyTest:
 	go run github.com/google/wire/cmd/wire ./tests
 	go test -v  ./internal/app/... -f `pwd` -covermode=count -coverprofile=dist/cover.out
-	go test -v  ./tests/... -f `pwd` -covermode=count -coverprofile=dist/cover.out
+	go test -v  ./tests/... -f `pwd` -covermode=count -coverprofile=dist/cover.out  -json
 .PHONY: test
 test: clean check genApi mock onlyTest

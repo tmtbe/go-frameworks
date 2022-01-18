@@ -1,0 +1,18 @@
+{
+  "status": "fail",
+  "message": "",
+  "total_test_count": 10,
+  "success_test_count": 9,
+  "fail_test_count": 1,
+  "ignore_test_count": 0,
+  "tests": [
+    {
+      "status": "fail",
+      "name": "TestUserDetailApi",
+      "execution_time": 0.00,
+      "error_infos":[
+        "",""
+      ]
+    }
+  ]
+}
