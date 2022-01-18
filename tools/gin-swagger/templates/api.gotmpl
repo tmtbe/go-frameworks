@@ -78,6 +78,7 @@ func (resp *{{ pascalize .Name }}) GetModel() interface{}{
 }
 func  (resp *{{ pascalize .Name }}) ToResponse()*{{ pascalize $o.Name }}Response{
 	return &{{  pascalize $o.Name }}Response{
+	    selectResp: resp,
 		{{ pascalize .Name }}:       resp,
 	}
 }
@@ -89,11 +90,16 @@ func  (resp *{{ pascalize .Name }}) ToResponse()*{{ pascalize $o.Name }}Response
 {{range .OperationGroups}}
 {{range .Operations}}
 type {{ pascalize .Name }}Response struct{
+selectResp Code
 {{range .Responses}} {{ pascalize .Name }} *{{ pascalize .Name }}
 {{end}}
 }
 func (resp *{{ pascalize .Name }}Response) GetResponse() Code{
-    return getResponse({{range .Responses}} resp.{{ pascalize .Name }}, {{end}})
+	if resp.selectResp==nil {
+		return getResponse({{range .Responses}} resp.{{ pascalize .Name }}, {{end}})
+	}else{
+		return resp.selectResp
+	}
 }
 {{end}}
 {{end}}
